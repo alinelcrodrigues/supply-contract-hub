@@ -80,14 +80,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "BALI - CONSTRUTORA BAETA LIGORIO" },
+      { name: "description", content: "Gestão de Contratos de Suprimentos da BALI - Construtora Baeta Ligório" },
+      { name: "author", content: "BALI - Construtora Baeta Ligório" },
+      { property: "og:title", content: "BALI - CONSTRUTORA BAETA LIGORIO" },
+      { property: "og:description", content: "Gestão de Contratos de Suprimentos da BALI - Construtora Baeta Ligório" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@BALI_Construtora" },
     ],
     links: [
       {
