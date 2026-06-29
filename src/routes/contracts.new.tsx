@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { addContract, type Contract } from "@/lib/contracts-store";
+import { addContract, COST_CENTERS, FINANCIAL_CATEGORIES, type Contract } from "@/lib/contracts-store";
 
 export const Route = createFileRoute("/contracts/new")({
   head: () => ({
@@ -37,6 +37,8 @@ function NewContract() {
     adjustmentIndex: "IPCA" as Contract["adjustmentIndex"],
     adjustmentMonth: 1,
     signed: false,
+    costCenter: COST_CENTERS[0] as string,
+    financialCategory: FINANCIAL_CATEGORIES[0] as string,
   });
 
   const update = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
@@ -44,7 +46,7 @@ function NewContract() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const value = Number(form.globalValue);
-    if (!form.number || !form.supplier || !form.startDate || !form.endDate || !value) {
+    if (!form.number || !form.supplier || !form.startDate || !form.endDate || !value || !form.costCenter || !form.financialCategory) {
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
@@ -62,6 +64,8 @@ function NewContract() {
       adjustmentIndex: form.adjustmentIndex,
       adjustmentMonth: form.adjustmentMonth,
       signed: form.signed,
+      costCenter: form.costCenter,
+      financialCategory: form.financialCategory,
     });
     toast.success("Contrato cadastrado.");
     navigate({ to: "/contracts/$id", params: { id: created.id } });
@@ -92,6 +96,25 @@ function NewContract() {
             <Field label="Objeto do contrato">
               <Textarea value={form.object} onChange={(e) => update("object", e.target.value)} rows={3} placeholder="Descrição do escopo de fornecimento" />
             </Field>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Centro de custo *">
+                <Select value={form.costCenter} onValueChange={(v) => update("costCenter", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {COST_CENTERS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Categoria financeira *">
+                <Select value={form.financialCategory} onValueChange={(v) => update("financialCategory", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {FINANCIAL_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Valor global (R$) *">

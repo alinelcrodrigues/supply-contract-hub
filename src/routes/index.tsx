@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertTriangle, CalendarClock, CheckCircle2, FileSignature, TrendingUp, Wallet } from "lucide-react";
+import { AlertTriangle, Building, CalendarClock, CheckCircle2, FileSignature, TrendingUp, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   contractBalance,
   daysUntil,
@@ -11,6 +13,7 @@ import {
   formatDate,
   nextAdjustmentDate,
   useContractsStable,
+  type Contract,
 } from "@/lib/contracts-store";
 
 export const Route = createFileRoute("/")({
@@ -25,25 +28,49 @@ export const Route = createFileRoute("/")({
 
 function Dashboard() {
   const contracts = useContractsStable();
+  const [filter, setFilter] = useState<string>("ALL");
 
-  const totalGlobal = contracts.reduce((s, c) => s + c.globalValue, 0);
-  const totalPaid = contracts.reduce((s, c) => s + contractBalance(c).paid, 0);
+  const costCenters = Array.from(new Set(contracts.map((c) => c.costCenter))).sort();
+  const filtered = filter === "ALL" ? contracts : contracts.filter((c) => c.costCenter === filter);
+
+  const totalGlobal = filtered.reduce((s, c) => s + c.globalValue, 0);
+  const totalPaid = filtered.reduce((s, c) => s + contractBalance(c).paid, 0);
   const totalBalance = totalGlobal - totalPaid;
-  const signedCount = contracts.filter((c) => c.signed).length;
+  const signedCount = filtered.filter((c) => c.signed).length;
 
-  const expiring = contracts
+  const expiring = filtered
     .map((c) => ({ c, days: daysUntil(c.endDate) }))
     .filter((x) => x.days <= 60)
     .sort((a, b) => a.days - b.days);
 
-  const adjustments = contracts
+  const adjustments = filtered
     .map((c) => ({ c, date: nextAdjustmentDate(c) }))
-    .filter((x): x is { c: typeof contracts[number]; date: Date } => !!x.date)
+    .filter((x): x is { c: Contract; date: Date } => !!x.date)
     .map((x) => ({ ...x, days: Math.round((x.date.getTime() - Date.now()) / 86_400_000) }))
     .filter((x) => x.days <= 60)
     .sort((a, b) => a.days - b.days);
 
-  const unsigned = contracts.filter((c) => !c.signed);
+  const unsigned = filtered.filter((c) => !c.signed);
+
+  // Per cost-center aggregates (always full dataset for overview comparison)
+  const byCostCenter = costCenters.map((cc) => {
+    const items = contracts.filter((c) => c.costCenter === cc);
+    const global = items.reduce((s, c) => s + c.globalValue, 0);
+    const paid = items.reduce((s, c) => s + contractBalance(c).paid, 0);
+    const catsMap = new Map<string, { global: number; paid: number }>();
+    for (const c of items) {
+      const cur = catsMap.get(c.financialCategory) ?? { global: 0, paid: 0 };
+      cur.global += c.globalValue;
+      cur.paid += contractBalance(c).paid;
+      catsMap.set(c.financialCategory, cur);
+    }
+    const cats = Array.from(catsMap.entries())
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => b.paid - a.paid);
+    return { cc, global, paid, balance: global - paid, count: items.length, cats };
+  });
+
+  const maxCcPaid = Math.max(1, ...byCostCenter.map((x) => x.paid));
 
   return (
     <div className="space-y-8">
@@ -51,20 +78,94 @@ function Dashboard() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Visão geral dos contratos de suprimentos da obra.
+            Análise por centro de custo e categoria financeira.
           </p>
         </div>
-        <Button asChild variant="secondary" className="font-semibold">
-          <Link to="/contracts/new">+ Novo contrato</Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2">
+            <Building className="h-4 w-4 text-primary" />
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Centro de custo</span>
+            <Select value={filter} onValueChange={setFilter}>
+              <SelectTrigger className="h-8 w-[220px] border-0 shadow-none focus:ring-0"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Todos</SelectItem>
+                {costCenters.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button asChild variant="secondary" className="font-semibold">
+            <Link to="/contracts/new">+ Novo contrato</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi icon={<FileSignature className="h-5 w-5" />} label="Contratos ativos" value={String(contracts.length)} hint={`${signedCount} assinados`} />
+        <Kpi icon={<FileSignature className="h-5 w-5" />} label="Contratos" value={String(filtered.length)} hint={`${signedCount} assinados`} />
         <Kpi icon={<Wallet className="h-5 w-5" />} label="Valor global" value={formatBRL(totalGlobal)} />
-        <Kpi icon={<TrendingUp className="h-5 w-5" />} label="Medições pagas" value={formatBRL(totalPaid)} />
+        <Kpi icon={<TrendingUp className="h-5 w-5" />} label="Gasto realizado" value={formatBRL(totalPaid)} />
         <Kpi icon={<CheckCircle2 className="h-5 w-5" />} label="Saldo a executar" value={formatBRL(totalBalance)} accent />
       </div>
+
+      {/* Cost center analysis */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Building className="h-4 w-4 text-primary" />
+            Gasto por centro de custo
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {byCostCenter.length === 0 ? (
+            <EmptyMsg text="Cadastre contratos para visualizar a análise." />
+          ) : (
+            byCostCenter.map((x) => (
+              <div key={x.cc} className="rounded-md border border-border p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="font-semibold text-foreground">{x.cc}</div>
+                    <div className="text-xs text-muted-foreground">{x.count} contratos · Global {formatBRL(x.global)}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-muted-foreground">Realizado</div>
+                    <div className="text-lg font-bold text-primary">{formatBRL(x.paid)}</div>
+                  </div>
+                </div>
+                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full bg-primary"
+                    style={{ width: `${(x.paid / maxCcPaid) * 100}%` }}
+                  />
+                </div>
+                <div className="mt-4 space-y-2">
+                  <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Por categoria financeira
+                  </div>
+                  {x.cats.map((cat) => {
+                    const pct = x.paid ? (cat.paid / x.paid) * 100 : 0;
+                    return (
+                      <div key={cat.name} className="grid grid-cols-[1fr_auto] items-center gap-3 text-sm">
+                        <div className="min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate font-medium">{cat.name}</span>
+                            <span className="text-xs text-muted-foreground">{pct.toFixed(0)}%</span>
+                          </div>
+                          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                            <div className="h-full bg-secondary" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                        <div className="text-right text-sm font-semibold tabular-nums">
+                          {formatBRL(cat.paid)}
+                          <div className="text-xs font-normal text-muted-foreground">de {formatBRL(cat.global)}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="border-border">
