@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   addMeasurement,
   contractBalance,
@@ -17,6 +18,7 @@ import {
   deleteMeasurement,
   formatBRL,
   formatDate,
+  measurementTotal,
   updateContract,
   useContractsStable,
 } from "@/lib/contracts-store";
@@ -37,7 +39,17 @@ function ContractDetail() {
   const contracts = useContractsStable();
   const contract = contracts.find((c) => c.id === id);
 
-  const [m, setM] = useState({ date: new Date().toISOString().slice(0, 10), description: "", amount: "" });
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const [m, setM] = useState({
+    date: todayIso,
+    description: "",
+    amount: "",
+    startDate: "",
+    endDate: "",
+    otherExpenses: "",
+    discount: "",
+    observation: "",
+  });
 
   if (!contract) {
     return (
@@ -54,16 +66,37 @@ function ContractDetail() {
   const submitMeasurement = (e: React.FormEvent) => {
     e.preventDefault();
     const amount = Number(m.amount);
+    const otherExpenses = Number(m.otherExpenses) || 0;
+    const discount = Number(m.discount) || 0;
+    const total = amount + otherExpenses - discount;
     if (!m.date || !amount || amount <= 0) {
       toast.error("Informe data e valor da medição.");
       return;
     }
-    if (amount > bal.balance) {
-      toast.error("Valor excede o saldo do contrato.");
+    if (total > bal.balance) {
+      toast.error("Valor total excede o saldo do contrato.");
       return;
     }
-    addMeasurement(contract.id, { date: m.date, description: m.description || "Medição", amount });
-    setM({ date: new Date().toISOString().slice(0, 10), description: "", amount: "" });
+    addMeasurement(contract.id, {
+      date: m.date,
+      description: m.description || "Medição",
+      amount,
+      startDate: m.startDate || undefined,
+      endDate: m.endDate || undefined,
+      otherExpenses: otherExpenses || undefined,
+      discount: discount || undefined,
+      observation: m.observation || undefined,
+    });
+    setM({
+      date: todayIso,
+      description: "",
+      amount: "",
+      startDate: "",
+      endDate: "",
+      otherExpenses: "",
+      discount: "",
+      observation: "",
+    });
     toast.success("Medição lançada.");
   };
 
@@ -189,15 +222,39 @@ function ContractDetail() {
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">Data</Label>
                 <Input type="date" value={m.date} onChange={(e) => setM({ ...m, date: e.target.value })} />
               </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Período início</Label>
+                  <Input type="date" value={m.startDate} onChange={(e) => setM({ ...m, startDate: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Período fim</Label>
+                  <Input type="date" value={m.endDate} onChange={(e) => setM({ ...m, endDate: e.target.value })} />
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">Descrição</Label>
                 <Input value={m.description} onChange={(e) => setM({ ...m, description: e.target.value })} placeholder="Medição mensal" />
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Valor (R$)</Label>
-                <Input type="number" min="0" step="0.01" value={m.amount} onChange={(e) => setM({ ...m, amount: e.target.value })} placeholder="0,00" />
-                <p className="text-xs text-muted-foreground">Saldo disponível: {formatBRL(bal.balance)}</p>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Valor (R$)</Label>
+                  <Input type="number" min="0" step="0.01" value={m.amount} onChange={(e) => setM({ ...m, amount: e.target.value })} placeholder="0,00" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Outras despesas (R$)</Label>
+                  <Input type="number" min="0" step="0.01" value={m.otherExpenses} onChange={(e) => setM({ ...m, otherExpenses: e.target.value })} placeholder="0,00" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Desconto (R$)</Label>
+                  <Input type="number" min="0" step="0.01" value={m.discount} onChange={(e) => setM({ ...m, discount: e.target.value })} placeholder="0,00" />
+                </div>
               </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Observação</Label>
+                <Textarea value={m.observation} onChange={(e) => setM({ ...m, observation: e.target.value })} placeholder="Informações complementares" />
+              </div>
+              <p className="text-xs text-muted-foreground">Saldo disponível: {formatBRL(bal.balance)}</p>
               <Button type="submit" variant="secondary" className="font-semibold">Lançar medição</Button>
             </form>
           </CardContent>
@@ -214,13 +271,17 @@ function ContractDetail() {
                 Nenhuma medição lançada ainda.
               </div>
             ) : (
-              <div className="overflow-hidden rounded-md border border-border">
+              <div className="overflow-x-auto rounded-md border border-border">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/60 text-xs uppercase tracking-wider text-muted-foreground">
                     <tr>
                       <th className="px-3 py-2 text-left">Data</th>
+                      <th className="px-3 py-2 text-left">Período</th>
                       <th className="px-3 py-2 text-left">Descrição</th>
                       <th className="px-3 py-2 text-right">Valor</th>
+                      <th className="px-3 py-2 text-right">Despesas</th>
+                      <th className="px-3 py-2 text-right">Desconto</th>
+                      <th className="px-3 py-2 text-right">Total</th>
                       <th className="px-3 py-2"></th>
                     </tr>
                   </thead>
@@ -228,8 +289,17 @@ function ContractDetail() {
                     {[...contract.measurements].sort((a, b) => b.date.localeCompare(a.date)).map((mm) => (
                       <tr key={mm.id} className="border-t border-border">
                         <td className="px-3 py-2">{formatDate(mm.date)}</td>
-                        <td className="px-3 py-2">{mm.description}</td>
-                        <td className="px-3 py-2 text-right font-medium">{formatBRL(mm.amount)}</td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground">
+                          {mm.startDate && mm.endDate ? `${formatDate(mm.startDate)} → ${formatDate(mm.endDate)}` : "—"}
+                        </td>
+                        <td className="px-3 py-2">
+                          <div>{mm.description}</div>
+                          {mm.observation && <div className="text-xs text-muted-foreground mt-0.5">{mm.observation}</div>}
+                        </td>
+                        <td className="px-3 py-2 text-right">{formatBRL(mm.amount)}</td>
+                        <td className="px-3 py-2 text-right">{mm.otherExpenses ? formatBRL(mm.otherExpenses) : "—"}</td>
+                        <td className="px-3 py-2 text-right">{mm.discount ? formatBRL(mm.discount) : "—"}</td>
+                        <td className="px-3 py-2 text-right font-medium">{formatBRL(measurementTotal(mm))}</td>
                         <td className="px-3 py-2 text-right">
                           <button
                             onClick={() => {
@@ -245,7 +315,7 @@ function ContractDetail() {
                   </tbody>
                   <tfoot>
                     <tr className="border-t border-border bg-muted/30 font-semibold">
-                      <td colSpan={2} className="px-3 py-2 text-right">Total executado</td>
+                      <td colSpan={6} className="px-3 py-2 text-right">Total executado</td>
                       <td className="px-3 py-2 text-right text-primary">{formatBRL(bal.paid)}</td>
                       <td />
                     </tr>

@@ -5,6 +5,11 @@ export type Measurement = {
   date: string; // ISO yyyy-mm-dd
   description: string;
   amount: number;
+  startDate?: string;
+  endDate?: string;
+  otherExpenses?: number;
+  discount?: number;
+  observation?: string;
 };
 
 export const COST_CENTERS = [
@@ -258,8 +263,12 @@ export const formatDate = (iso: string) => {
   return `${d}/${m}/${y}`;
 };
 
+export function measurementTotal(m: Measurement): number {
+  return m.amount + (m.otherExpenses || 0) - (m.discount || 0);
+}
+
 export function contractBalance(c: Contract) {
-  const paid = c.measurements.reduce((s, m) => s + m.amount, 0);
+  const paid = c.measurements.reduce((s, m) => s + measurementTotal(m), 0);
   return { paid, balance: c.globalValue - paid, pct: c.globalValue ? paid / c.globalValue : 0 };
 }
 
