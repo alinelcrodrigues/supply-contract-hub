@@ -271,13 +271,17 @@ function ContractDetail() {
                 Nenhuma medição lançada ainda.
               </div>
             ) : (
-              <div className="overflow-hidden rounded-md border border-border">
+              <div className="overflow-x-auto rounded-md border border-border">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/60 text-xs uppercase tracking-wider text-muted-foreground">
                     <tr>
                       <th className="px-3 py-2 text-left">Data</th>
+                      <th className="px-3 py-2 text-left">Período</th>
                       <th className="px-3 py-2 text-left">Descrição</th>
                       <th className="px-3 py-2 text-right">Valor</th>
+                      <th className="px-3 py-2 text-right">Despesas</th>
+                      <th className="px-3 py-2 text-right">Desconto</th>
+                      <th className="px-3 py-2 text-right">Total</th>
                       <th className="px-3 py-2"></th>
                     </tr>
                   </thead>
@@ -285,8 +289,17 @@ function ContractDetail() {
                     {[...contract.measurements].sort((a, b) => b.date.localeCompare(a.date)).map((mm) => (
                       <tr key={mm.id} className="border-t border-border">
                         <td className="px-3 py-2">{formatDate(mm.date)}</td>
-                        <td className="px-3 py-2">{mm.description}</td>
-                        <td className="px-3 py-2 text-right font-medium">{formatBRL(mm.amount)}</td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground">
+                          {mm.startDate && mm.endDate ? `${formatDate(mm.startDate)} → ${formatDate(mm.endDate)}` : "—"}
+                        </td>
+                        <td className="px-3 py-2">
+                          <div>{mm.description}</div>
+                          {mm.observation && <div className="text-xs text-muted-foreground mt-0.5">{mm.observation}</div>}
+                        </td>
+                        <td className="px-3 py-2 text-right">{formatBRL(mm.amount)}</td>
+                        <td className="px-3 py-2 text-right">{mm.otherExpenses ? formatBRL(mm.otherExpenses) : "—"}</td>
+                        <td className="px-3 py-2 text-right">{mm.discount ? formatBRL(mm.discount) : "—"}</td>
+                        <td className="px-3 py-2 text-right font-medium">{formatBRL(measurementTotal(mm))}</td>
                         <td className="px-3 py-2 text-right">
                           <button
                             onClick={() => {
@@ -302,7 +315,7 @@ function ContractDetail() {
                   </tbody>
                   <tfoot>
                     <tr className="border-t border-border bg-muted/30 font-semibold">
-                      <td colSpan={2} className="px-3 py-2 text-right">Total executado</td>
+                      <td colSpan={6} className="px-3 py-2 text-right">Total executado</td>
                       <td className="px-3 py-2 text-right text-primary">{formatBRL(bal.paid)}</td>
                       <td />
                     </tr>
