@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 export type Measurement = {
   id: string;
@@ -51,7 +51,7 @@ function read(): Contract[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(KEY);
-    if (!raw) return seed();
+    if (!raw) return [];
     return JSON.parse(raw) as Contract[];
   } catch {
     return [];
@@ -64,7 +64,7 @@ function write(list: Contract[]) {
   listeners.forEach((l) => l());
 }
 
-function seed(): Contract[] {
+function buildSeed(): Contract[] {
   const today = new Date();
   const iso = (d: Date) => d.toISOString().slice(0, 10);
   const addDays = (d: Date, n: number) => {
@@ -159,8 +159,14 @@ function seed(): Contract[] {
       ],
     },
   ];
-  window.localStorage.setItem(KEY, JSON.stringify(sample));
   return sample;
+}
+
+function ensureSeeded() {
+  if (typeof window === "undefined") return;
+  if (window.localStorage.getItem(KEY)) return;
+  window.localStorage.setItem(KEY, JSON.stringify(buildSeed()));
+  listeners.forEach((l) => l());
 }
 
 const listeners = new Set<() => void>();
@@ -193,7 +199,11 @@ function snapshot(): Contract[] {
 }
 
 export function useContractsStable(): Contract[] {
-  return useSyncExternalStore(subscribe, snapshot, () => []);
+  const data = useSyncExternalStore(subscribe, snapshot, () => []);
+  useEffect(() => {
+    ensureSeeded();
+  }, []);
+  return data;
 }
 
 export function getContract(id: string): Contract | undefined {
