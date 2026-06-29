@@ -152,6 +152,7 @@ function buildSeed(): Contract[] {
       supplier: "Locadora Máquinas Brasil",
       object: "Locação de gruas e betoneiras",
       globalValue: 540000,
+      budgetValue: 500000,
       startDate: iso(addDays(today, -60)),
       endDate: iso(addDays(today, 240)),
       adjustmentIndex: "IGP-M",
