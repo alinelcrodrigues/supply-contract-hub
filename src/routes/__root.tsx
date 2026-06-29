@@ -8,6 +8,8 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Building2, LayoutDashboard, FilePlus2, FileText } from "lucide-react";
+import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -118,8 +120,44 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="min-h-screen bg-background text-foreground">
+        <header className="sticky top-0 z-30 border-b border-border bg-primary text-primary-foreground">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="text-sm uppercase tracking-widest text-secondary">Construtora</div>
+                <div className="text-base font-semibold">Gestão de Contratos de Suprimentos</div>
+              </div>
+            </Link>
+            <nav className="flex items-center gap-1">
+              <NavLink to="/" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
+              <NavLink to="/contracts" icon={<FileText className="h-4 w-4" />} label="Contratos" />
+              <NavLink to="/contracts/new" icon={<FilePlus2 className="h-4 w-4" />} label="Novo contrato" />
+            </nav>
+          </div>
+        </header>
+        <main className="mx-auto max-w-7xl px-6 py-8">
+          <Outlet />
+        </main>
+        <Toaster richColors position="top-right" />
+      </div>
     </QueryClientProvider>
+  );
+}
+
+function NavLink({ to, icon, label }: { to: string; icon: ReactNode; label: string }) {
+  return (
+    <Link
+      to={to}
+      activeOptions={{ exact: to === "/" }}
+      className="group inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-primary-foreground/80 transition-colors hover:bg-primary-foreground/10 hover:text-primary-foreground"
+      activeProps={{ className: "bg-secondary text-secondary-foreground hover:bg-secondary hover:text-secondary-foreground" }}
+    >
+      {icon}
+      {label}
+    </Link>
   );
 }
