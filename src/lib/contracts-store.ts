@@ -117,6 +117,7 @@ function buildSeed(): Contract[] {
       supplier: "Madeireira Pinheiro",
       object: "Madeira para fôrmas",
       globalValue: 220000,
+      budgetValue: null,
       startDate: iso(addDays(today, -90)),
       endDate: iso(addDays(today, 90)),
       adjustmentIndex: "Nenhum",
