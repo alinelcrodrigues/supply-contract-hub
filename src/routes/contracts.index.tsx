@@ -37,7 +37,7 @@ function ContractsList() {
             const expiring = days <= 60;
             return (
               <Link key={c.id} to="/contracts/$id" params={{ id: c.id }} className="block">
-                <Card className="transition-colors hover:border-primary">
+                <Card className={`transition-colors hover:border-primary ${expiring ? "border-secondary bg-secondary/10" : ""}`}>
                   <CardContent className="p-5">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
@@ -47,6 +47,11 @@ function ContractsList() {
                             <Badge className="bg-primary text-primary-foreground">Assinado</Badge>
                           ) : (
                             <Badge className="bg-secondary text-secondary-foreground">Pendente</Badge>
+                          )}
+                          {expiring && (
+                            <Badge className={days < 0 ? "bg-destructive text-destructive-foreground" : "bg-secondary text-secondary-foreground"}>
+                              {days < 0 ? `Vencido há ${-days}d` : `Vence em ${days}d`}
+                            </Badge>
                           )}
                         </div>
                         <div className="mt-1 text-sm font-medium">{c.supplier}</div>
