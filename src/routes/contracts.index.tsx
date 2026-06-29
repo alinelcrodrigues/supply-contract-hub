@@ -33,6 +33,8 @@ function ContractsList() {
         <div className="grid gap-3">
           {contracts.map((c) => {
             const b = contractBalance(c);
+            const days = daysUntil(c.endDate);
+            const expiring = days <= 60;
             return (
               <Link key={c.id} to="/contracts/$id" params={{ id: c.id }} className="block">
                 <Card className="transition-colors hover:border-primary">
