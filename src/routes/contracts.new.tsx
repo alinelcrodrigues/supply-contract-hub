@@ -56,11 +56,13 @@ function NewContract() {
       toast.error("Data de término anterior ao início.");
       return;
     }
+    const budgetValue = form.budgetNotApplicable ? null : Number(form.budgetValue) || null;
     const created = addContract({
       number: form.number,
       supplier: form.supplier,
       object: form.object,
       globalValue: value,
+      budgetValue,
       startDate: form.startDate,
       endDate: form.endDate,
       adjustmentIndex: form.adjustmentIndex,
