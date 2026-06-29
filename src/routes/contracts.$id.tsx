@@ -88,6 +88,19 @@ function ContractDetail() {
         </Button>
       </div>
 
+      {days <= 60 && (
+        <div className={`rounded-md border p-4 ${days < 0 ? "border-destructive bg-destructive/10" : "border-secondary bg-secondary/10"}`}>
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <span className={`inline-block h-2 w-2 rounded-full ${days < 0 ? "bg-destructive" : "bg-secondary-foreground"}`} />
+            {days < 0 ? (
+              <span className="text-destructive">Alerta: contrato vencido há {-days} dias.</span>
+            ) : (
+              <span className="text-secondary-foreground">Alerta: fim da vigência em {days} dias.</span>
+            )}
+          </div>
+        </div>
+      )}
+
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
