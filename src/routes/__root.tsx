@@ -8,7 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { Building2, LayoutDashboard, FilePlus2, FileText } from "lucide-react";
+import { LayoutDashboard, FilePlus2, FileText } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
