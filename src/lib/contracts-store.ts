@@ -133,6 +133,7 @@ function buildSeed(): Contract[] {
       supplier: "Elétrica Power Sul",
       object: "Material elétrico e quadros",
       globalValue: 380000,
+      budgetValue: 380000,
       startDate: iso(addDays(today, -120)),
       endDate: iso(addDays(today, 150)),
       adjustmentIndex: "IPCA",
