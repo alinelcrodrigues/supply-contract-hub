@@ -39,7 +39,17 @@ function ContractDetail() {
   const contracts = useContractsStable();
   const contract = contracts.find((c) => c.id === id);
 
-  const [m, setM] = useState({ date: new Date().toISOString().slice(0, 10), description: "", amount: "" });
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const [m, setM] = useState({
+    date: todayIso,
+    description: "",
+    amount: "",
+    startDate: "",
+    endDate: "",
+    otherExpenses: "",
+    discount: "",
+    observation: "",
+  });
 
   if (!contract) {
     return (
@@ -56,16 +66,37 @@ function ContractDetail() {
   const submitMeasurement = (e: React.FormEvent) => {
     e.preventDefault();
     const amount = Number(m.amount);
+    const otherExpenses = Number(m.otherExpenses) || 0;
+    const discount = Number(m.discount) || 0;
+    const total = amount + otherExpenses - discount;
     if (!m.date || !amount || amount <= 0) {
       toast.error("Informe data e valor da medição.");
       return;
     }
-    if (amount > bal.balance) {
-      toast.error("Valor excede o saldo do contrato.");
+    if (total > bal.balance) {
+      toast.error("Valor total excede o saldo do contrato.");
       return;
     }
-    addMeasurement(contract.id, { date: m.date, description: m.description || "Medição", amount });
-    setM({ date: new Date().toISOString().slice(0, 10), description: "", amount: "" });
+    addMeasurement(contract.id, {
+      date: m.date,
+      description: m.description || "Medição",
+      amount,
+      startDate: m.startDate || undefined,
+      endDate: m.endDate || undefined,
+      otherExpenses: otherExpenses || undefined,
+      discount: discount || undefined,
+      observation: m.observation || undefined,
+    });
+    setM({
+      date: todayIso,
+      description: "",
+      amount: "",
+      startDate: "",
+      endDate: "",
+      otherExpenses: "",
+      discount: "",
+      observation: "",
+    });
     toast.success("Medição lançada.");
   };
 
