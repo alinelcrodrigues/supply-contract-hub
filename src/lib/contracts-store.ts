@@ -7,6 +7,28 @@ export type Measurement = {
   amount: number;
 };
 
+export const COST_CENTERS = [
+  "Obra Residencial Vila Nova",
+  "Obra Comercial Centro",
+  "Obra Industrial Norte",
+  "Administração Central",
+] as const;
+
+export const FINANCIAL_CATEGORIES = [
+  "Estrutura",
+  "Alvenaria",
+  "Instalações Elétricas",
+  "Instalações Hidráulicas",
+  "Acabamentos",
+  "Esquadrias",
+  "Locação de Equipamentos",
+  "Serviços Terceirizados",
+  "Administrativo",
+] as const;
+
+export type CostCenter = (typeof COST_CENTERS)[number] | string;
+export type FinancialCategory = (typeof FINANCIAL_CATEGORIES)[number] | string;
+
 export type Contract = {
   id: string;
   number: string;
@@ -18,10 +40,12 @@ export type Contract = {
   adjustmentIndex: "IPCA" | "IGP-M" | "INCC" | "SINAPI" | "Nenhum";
   adjustmentMonth: number; // 1-12 anniversary month
   signed: boolean;
+  costCenter: CostCenter;
+  financialCategory: FinancialCategory;
   measurements: Measurement[];
 };
 
-const KEY = "supply-contracts:v1";
+const KEY = "supply-contracts:v2";
 
 function read(): Contract[] {
   if (typeof window === "undefined") return [];
@@ -60,6 +84,8 @@ function seed(): Contract[] {
       adjustmentIndex: "INCC",
       adjustmentMonth: ((today.getMonth() + 1) % 12) + 1,
       signed: true,
+      costCenter: "Obra Residencial Vila Nova",
+      financialCategory: "Estrutura",
       measurements: [
         { id: crypto.randomUUID(), date: iso(addDays(today, -60)), description: "Medição #1", amount: 120000 },
         { id: crypto.randomUUID(), date: iso(addDays(today, -30)), description: "Medição #2", amount: 95000 },
@@ -76,6 +102,8 @@ function seed(): Contract[] {
       adjustmentIndex: "IPCA",
       adjustmentMonth: today.getMonth() + 1,
       signed: true,
+      costCenter: "Obra Comercial Centro",
+      financialCategory: "Estrutura",
       measurements: [
         { id: crypto.randomUUID(), date: iso(addDays(today, -45)), description: "Medição #1", amount: 320000 },
       ],
@@ -91,7 +119,44 @@ function seed(): Contract[] {
       adjustmentIndex: "Nenhum",
       adjustmentMonth: 1,
       signed: false,
+      costCenter: "Obra Residencial Vila Nova",
+      financialCategory: "Alvenaria",
       measurements: [],
+    },
+    {
+      id: crypto.randomUUID(),
+      number: "CT-2025-031",
+      supplier: "Elétrica Power Sul",
+      object: "Material elétrico e quadros",
+      globalValue: 380000,
+      startDate: iso(addDays(today, -120)),
+      endDate: iso(addDays(today, 150)),
+      adjustmentIndex: "IPCA",
+      adjustmentMonth: 6,
+      signed: true,
+      costCenter: "Obra Comercial Centro",
+      financialCategory: "Instalações Elétricas",
+      measurements: [
+        { id: crypto.randomUUID(), date: iso(addDays(today, -50)), description: "Medição #1", amount: 80000 },
+        { id: crypto.randomUUID(), date: iso(addDays(today, -20)), description: "Medição #2", amount: 60000 },
+      ],
+    },
+    {
+      id: crypto.randomUUID(),
+      number: "CT-2025-040",
+      supplier: "Locadora Máquinas Brasil",
+      object: "Locação de gruas e betoneiras",
+      globalValue: 540000,
+      startDate: iso(addDays(today, -60)),
+      endDate: iso(addDays(today, 240)),
+      adjustmentIndex: "IGP-M",
+      adjustmentMonth: 9,
+      signed: true,
+      costCenter: "Obra Industrial Norte",
+      financialCategory: "Locação de Equipamentos",
+      measurements: [
+        { id: crypto.randomUUID(), date: iso(addDays(today, -25)), description: "Medição #1", amount: 90000 },
+      ],
     },
   ];
   window.localStorage.setItem(KEY, JSON.stringify(sample));
