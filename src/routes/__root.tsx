@@ -80,14 +80,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "BALI - CONSTRUTORA BAETA LIGORIO" },
+      { name: "description", content: "Gestão de Contratos de Suprimentos da BALI - Construtora Baeta Ligório" },
+      { name: "author", content: "BALI - Construtora Baeta Ligório" },
+      { property: "og:title", content: "BALI - CONSTRUTORA BAETA LIGORIO" },
+      { property: "og:description", content: "Gestão de Contratos de Suprimentos da BALI - Construtora Baeta Ligório" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@BALI_Construtora" },
     ],
     links: [
       {
@@ -127,10 +127,10 @@ function RootComponent() {
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
             <Link to="/" className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-md bg-white p-1">
-                <img src={baliLogo.url} alt="BALI Construtora Baeta Ligório" className="h-full w-full object-contain" />
+                <img src={baliLogo.url} alt="BALI - CONSTRUTORA BAETA LIGORIO" className="h-full w-full object-contain" />
               </div>
               <div>
-                <div className="text-sm uppercase tracking-[0.2em] text-secondary font-semibold">BALI</div>
+                <div className="text-sm uppercase tracking-[0.15em] text-secondary font-semibold">BALI - CONSTRUTORA BAETA LIGORIO</div>
                 <div className="text-base font-semibold">Gestão de Contratos de Suprimentos</div>
               </div>
             </Link>
