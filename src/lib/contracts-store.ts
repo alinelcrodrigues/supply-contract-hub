@@ -35,6 +35,7 @@ export type Contract = {
   supplier: string;
   object: string;
   globalValue: number;
+  budgetValue: number | null;
   startDate: string;
   endDate: string;
   adjustmentIndex: "IPCA" | "IGP-M" | "INCC" | "SINAPI" | "Nenhum";
@@ -45,7 +46,7 @@ export type Contract = {
   measurements: Measurement[];
 };
 
-const KEY = "supply-contracts:v2";
+const KEY = "supply-contracts:v3";
 
 function read(): Contract[] {
   if (typeof window === "undefined") return [];
