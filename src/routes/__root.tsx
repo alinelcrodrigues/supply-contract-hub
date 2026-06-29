@@ -12,6 +12,7 @@ import { Building2, LayoutDashboard, FilePlus2, FileText } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
+import baliLogo from "@/assets/bali-logo.jpg.asset.json";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -93,6 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "icon", type: "image/jpeg", href: baliLogo.url },
     ],
   }),
   shellComponent: RootShell,
@@ -124,11 +126,11 @@ function RootComponent() {
         <header className="sticky top-0 z-30 border-b border-border bg-primary text-primary-foreground">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
             <Link to="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
-                <Building2 className="h-5 w-5" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-white p-1">
+                <img src={baliLogo.url} alt="BALI Construtora Baeta Ligório" className="h-full w-full object-contain" />
               </div>
               <div>
-                <div className="text-sm uppercase tracking-widest text-secondary">Construtora</div>
+                <div className="text-sm uppercase tracking-[0.2em] text-secondary font-semibold">BALI</div>
                 <div className="text-base font-semibold">Gestão de Contratos de Suprimentos</div>
               </div>
             </Link>
