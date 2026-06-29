@@ -35,6 +35,7 @@ export type Contract = {
   supplier: string;
   object: string;
   globalValue: number;
+  budgetValue: number | null;
   startDate: string;
   endDate: string;
   adjustmentIndex: "IPCA" | "IGP-M" | "INCC" | "SINAPI" | "Nenhum";
@@ -45,7 +46,7 @@ export type Contract = {
   measurements: Measurement[];
 };
 
-const KEY = "supply-contracts:v2";
+const KEY = "supply-contracts:v3";
 
 function read(): Contract[] {
   if (typeof window === "undefined") return [];
@@ -79,6 +80,7 @@ function buildSeed(): Contract[] {
       supplier: "Cimentos União Ltda.",
       object: "Fornecimento de cimento CP-II",
       globalValue: 480000,
+      budgetValue: 450000,
       startDate: iso(addDays(today, -300)),
       endDate: iso(addDays(today, 20)),
       adjustmentIndex: "INCC",
@@ -97,6 +99,7 @@ function buildSeed(): Contract[] {
       supplier: "Aço Forte Distribuidora",
       object: "Vergalhões e telas soldadas",
       globalValue: 1250000,
+      budgetValue: 1200000,
       startDate: iso(addDays(today, -180)),
       endDate: iso(addDays(today, 200)),
       adjustmentIndex: "IPCA",
@@ -114,6 +117,7 @@ function buildSeed(): Contract[] {
       supplier: "Madeireira Pinheiro",
       object: "Madeira para fôrmas",
       globalValue: 220000,
+      budgetValue: null,
       startDate: iso(addDays(today, -90)),
       endDate: iso(addDays(today, 90)),
       adjustmentIndex: "Nenhum",
@@ -129,6 +133,7 @@ function buildSeed(): Contract[] {
       supplier: "Elétrica Power Sul",
       object: "Material elétrico e quadros",
       globalValue: 380000,
+      budgetValue: 380000,
       startDate: iso(addDays(today, -120)),
       endDate: iso(addDays(today, 150)),
       adjustmentIndex: "IPCA",
@@ -147,6 +152,7 @@ function buildSeed(): Contract[] {
       supplier: "Locadora Máquinas Brasil",
       object: "Locação de gruas e betoneiras",
       globalValue: 540000,
+      budgetValue: 500000,
       startDate: iso(addDays(today, -60)),
       endDate: iso(addDays(today, 240)),
       adjustmentIndex: "IGP-M",

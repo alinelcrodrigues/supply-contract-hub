@@ -32,6 +32,8 @@ function NewContract() {
     supplier: "",
     object: "",
     globalValue: "",
+    budgetValue: "",
+    budgetNotApplicable: false,
     startDate: "",
     endDate: "",
     adjustmentIndex: "IPCA" as Contract["adjustmentIndex"],
@@ -54,11 +56,13 @@ function NewContract() {
       toast.error("Data de término anterior ao início.");
       return;
     }
+    const budgetValue = form.budgetNotApplicable ? null : Number(form.budgetValue) || null;
     const created = addContract({
       number: form.number,
       supplier: form.supplier,
       object: form.object,
       globalValue: value,
+      budgetValue,
       startDate: form.startDate,
       endDate: form.endDate,
       adjustmentIndex: form.adjustmentIndex,
@@ -120,9 +124,32 @@ function NewContract() {
               <Field label="Valor global (R$) *">
                 <Input type="number" min="0" step="0.01" value={form.globalValue} onChange={(e) => update("globalValue", e.target.value)} placeholder="0,00" />
               </Field>
+              <Field label="Valor de orçamento (R$)">
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.budgetValue}
+                  onChange={(e) => update("budgetValue", e.target.value)}
+                  placeholder="0,00"
+                  disabled={form.budgetNotApplicable}
+                  className={form.budgetNotApplicable ? "bg-muted text-muted-foreground" : ""}
+                />
+              </Field>
               <Field label="Início da vigência *">
                 <Input type="date" value={form.startDate} onChange={(e) => update("startDate", e.target.value)} />
               </Field>
+            </div>
+
+            <div className="flex items-center justify-between rounded-md border border-border bg-muted/40 p-4">
+              <div>
+                <div className="text-sm font-medium">Não se aplica ao orçamento</div>
+                <div className="text-xs text-muted-foreground">Marque quando o objeto não estiver previsto no orçamento da obra.</div>
+              </div>
+              <Switch checked={form.budgetNotApplicable} onCheckedChange={(v) => update("budgetNotApplicable", v)} />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Fim da vigência *">
                 <Input type="date" value={form.endDate} onChange={(e) => update("endDate", e.target.value)} />
               </Field>
