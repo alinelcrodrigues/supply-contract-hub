@@ -99,6 +99,7 @@ function buildSeed(): Contract[] {
       supplier: "Aço Forte Distribuidora",
       object: "Vergalhões e telas soldadas",
       globalValue: 1250000,
+      budgetValue: 1200000,
       startDate: iso(addDays(today, -180)),
       endDate: iso(addDays(today, 200)),
       adjustmentIndex: "IPCA",
