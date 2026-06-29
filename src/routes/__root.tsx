@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BALI - CONSTRUTORA BAETA LIGORIO" },
+      { title: "BALI CONSTRUTORA" },
       { name: "description", content: "Gestão de Contratos de Suprimentos da BALI - Construtora Baeta Ligório" },
       { name: "author", content: "BALI - Construtora Baeta Ligório" },
       { property: "og:title", content: "BALI - CONSTRUTORA BAETA LIGORIO" },
@@ -126,12 +126,12 @@ function RootComponent() {
         <header className="sticky top-0 z-30 border-b border-border bg-primary text-primary-foreground">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
             <Link to="/" className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-white p-1">
-                <img src={baliLogo.url} alt="BALI - CONSTRUTORA BAETA LIGORIO" className="h-full w-full object-contain" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-md bg-white p-1">
+                <img src={baliLogo.url} alt="BALI CONSTRUTORA" className="h-full w-full object-contain" />
               </div>
               <div>
-                <div className="text-sm uppercase tracking-[0.15em] text-secondary font-semibold">BALI - CONSTRUTORA BAETA LIGORIO</div>
-                <div className="text-base font-semibold">Gestão de Contratos de Suprimentos</div>
+                <div className="text-sm uppercase tracking-[0.15em] text-secondary font-semibold">BALI CONSTRUTORA</div>
+                <div className="text-base font-semibold">Gestão de Contratos</div>
               </div>
             </Link>
             <nav className="flex items-center gap-1">

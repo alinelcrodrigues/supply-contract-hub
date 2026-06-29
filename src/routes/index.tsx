@@ -19,7 +19,7 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — BALI - CONSTRUTORA BAETA LIGORIO" },
+      { title: "Dashboard — BALI CONSTRUTORA" },
       { name: "description", content: "Acompanhe alertas de vencimento, reajustes e saldo de contratos de suprimentos da BALI - Construtora Baeta Ligório." },
     ],
   }),
