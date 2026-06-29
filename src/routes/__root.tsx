@@ -127,10 +127,10 @@ function RootComponent() {
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
             <Link to="/" className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-md bg-white p-1">
-                <img src={baliLogo.url} alt="BALI Construtora Baeta Ligório" className="h-full w-full object-contain" />
+                <img src={baliLogo.url} alt="BALI - CONSTRUTORA BAETA LIGORIO" className="h-full w-full object-contain" />
               </div>
               <div>
-                <div className="text-sm uppercase tracking-[0.2em] text-secondary font-semibold">BALI</div>
+                <div className="text-sm uppercase tracking-[0.15em] text-secondary font-semibold">BALI - CONSTRUTORA BAETA LIGORIO</div>
                 <div className="text-base font-semibold">Gestão de Contratos de Suprimentos</div>
               </div>
             </Link>
