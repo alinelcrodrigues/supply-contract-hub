@@ -222,15 +222,39 @@ function ContractDetail() {
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">Data</Label>
                 <Input type="date" value={m.date} onChange={(e) => setM({ ...m, date: e.target.value })} />
               </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Período início</Label>
+                  <Input type="date" value={m.startDate} onChange={(e) => setM({ ...m, startDate: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Período fim</Label>
+                  <Input type="date" value={m.endDate} onChange={(e) => setM({ ...m, endDate: e.target.value })} />
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">Descrição</Label>
                 <Input value={m.description} onChange={(e) => setM({ ...m, description: e.target.value })} placeholder="Medição mensal" />
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Valor (R$)</Label>
-                <Input type="number" min="0" step="0.01" value={m.amount} onChange={(e) => setM({ ...m, amount: e.target.value })} placeholder="0,00" />
-                <p className="text-xs text-muted-foreground">Saldo disponível: {formatBRL(bal.balance)}</p>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Valor (R$)</Label>
+                  <Input type="number" min="0" step="0.01" value={m.amount} onChange={(e) => setM({ ...m, amount: e.target.value })} placeholder="0,00" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Outras despesas (R$)</Label>
+                  <Input type="number" min="0" step="0.01" value={m.otherExpenses} onChange={(e) => setM({ ...m, otherExpenses: e.target.value })} placeholder="0,00" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Desconto (R$)</Label>
+                  <Input type="number" min="0" step="0.01" value={m.discount} onChange={(e) => setM({ ...m, discount: e.target.value })} placeholder="0,00" />
+                </div>
               </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Observação</Label>
+                <Textarea value={m.observation} onChange={(e) => setM({ ...m, observation: e.target.value })} placeholder="Informações complementares" />
+              </div>
+              <p className="text-xs text-muted-foreground">Saldo disponível: {formatBRL(bal.balance)}</p>
               <Button type="submit" variant="secondary" className="font-semibold">Lançar medição</Button>
             </form>
           </CardContent>
