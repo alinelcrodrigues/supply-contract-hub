@@ -140,6 +140,7 @@ function NewContract() {
                 <Input type="date" value={form.startDate} onChange={(e) => update("startDate", e.target.value)} />
               </Field>
             </div>
+
             <div className="flex items-center justify-between rounded-md border border-border bg-muted/40 p-4">
               <div>
                 <div className="text-sm font-medium">Não se aplica ao orçamento</div>
@@ -147,7 +148,8 @@ function NewContract() {
               </div>
               <Switch checked={form.budgetNotApplicable} onCheckedChange={(v) => update("budgetNotApplicable", v)} />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+
+            <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Fim da vigência *">
                 <Input type="date" value={form.endDate} onChange={(e) => update("endDate", e.target.value)} />
               </Field>
