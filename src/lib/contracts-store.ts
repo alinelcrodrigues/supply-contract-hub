@@ -80,6 +80,7 @@ function buildSeed(): Contract[] {
       supplier: "Cimentos União Ltda.",
       object: "Fornecimento de cimento CP-II",
       globalValue: 480000,
+      budgetValue: 450000,
       startDate: iso(addDays(today, -300)),
       endDate: iso(addDays(today, 20)),
       adjustmentIndex: "INCC",
