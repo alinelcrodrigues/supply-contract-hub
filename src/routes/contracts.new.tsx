@@ -32,6 +32,8 @@ function NewContract() {
     supplier: "",
     object: "",
     globalValue: "",
+    budgetValue: "",
+    budgetNotApplicable: false,
     startDate: "",
     endDate: "",
     adjustmentIndex: "IPCA" as Contract["adjustmentIndex"],
