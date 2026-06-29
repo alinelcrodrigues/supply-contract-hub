@@ -118,12 +118,37 @@ function ContractDetail() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-4">
+          <div className="mt-6 grid gap-4 sm:grid-cols-5">
             <Info label="Valor global" value={formatBRL(contract.globalValue)} />
             <Info label="Executado" value={formatBRL(bal.paid)} />
             <Info label="Saldo" value={formatBRL(bal.balance)} highlight />
+            <Info label="Orçamento" value={contract.budgetValue !== null ? formatBRL(contract.budgetValue) : "Não se aplica"} />
             <Info label="Vigência" value={`${formatDate(contract.startDate)} → ${formatDate(contract.endDate)}`} sub={days < 0 ? `Vencido há ${-days}d` : `${days} dias restantes`} />
           </div>
+
+          {contract.budgetValue !== null && (
+            <div className="mt-4 rounded-md border border-border bg-muted/30 p-3">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Análise orçamento × contratado</div>
+              <div className="mt-1 flex items-center gap-2 text-sm font-medium">
+                {contract.globalValue > contract.budgetValue ? (
+                  <>
+                    <span className="inline-block h-2 w-2 rounded-full bg-destructive" />
+                    <span className="text-destructive">Acima do orçamento ({formatBRL(contract.globalValue - contract.budgetValue)})</span>
+                  </>
+                ) : contract.globalValue < contract.budgetValue ? (
+                  <>
+                    <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                    <span className="text-emerald-500">Abaixo do orçamento (economia de {formatBRL(contract.budgetValue - contract.globalValue)})</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="inline-block h-2 w-2 rounded-full bg-primary" />
+                    <span className="text-foreground">Valor igual ao orçamento</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="mt-6">
             <div className="mb-2 flex justify-between text-xs text-muted-foreground">
