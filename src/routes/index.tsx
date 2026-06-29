@@ -19,8 +19,8 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Gestão de Contratos de Suprimentos" },
-      { name: "description", content: "Acompanhe alertas de vencimento, reajustes e saldo de contratos de suprimentos." },
+      { title: "Dashboard — BALI - CONSTRUTORA BAETA LIGORIO" },
+      { name: "description", content: "Acompanhe alertas de vencimento, reajustes e saldo de contratos de suprimentos da BALI - Construtora Baeta Ligório." },
     ],
   }),
   component: Dashboard,
