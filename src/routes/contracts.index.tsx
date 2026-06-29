@@ -49,6 +49,10 @@ function ContractsList() {
                         </div>
                         <div className="mt-1 text-sm font-medium">{c.supplier}</div>
                         <div className="text-xs text-muted-foreground">{c.object}</div>
+                        <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                          <Badge variant="outline" className="border-primary text-primary">{c.costCenter}</Badge>
+                          <Badge variant="outline">{c.financialCategory}</Badge>
+                        </div>
                         <div className="mt-2 text-xs text-muted-foreground">
                           Vigência: {formatDate(c.startDate)} → {formatDate(c.endDate)} · Índice: {c.adjustmentIndex}
                         </div>

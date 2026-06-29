@@ -136,6 +136,8 @@ function ContractDetail() {
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             <Info label="Índice de reajuste" value={contract.adjustmentIndex} />
             <Info label="Mês do reajuste" value={new Date(2000, contract.adjustmentMonth - 1, 1).toLocaleDateString("pt-BR", { month: "long" })} />
+            <Info label="Centro de custo" value={contract.costCenter} />
+            <Info label="Categoria financeira" value={contract.financialCategory} />
           </div>
         </CardContent>
       </Card>
