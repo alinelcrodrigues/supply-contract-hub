@@ -257,11 +257,20 @@ function Dashboard() {
         <CardContent className="space-y-4">
           {contracts.slice(0, 5).map((c) => {
             const b = contractBalance(c);
+            const days = daysUntil(c.endDate);
+            const expiring = days <= 60;
             return (
-              <Link key={c.id} to="/contracts/$id" params={{ id: c.id }} className="block rounded-md border border-border p-4 transition-colors hover:border-primary">
+              <Link key={c.id} to="/contracts/$id" params={{ id: c.id }} className={`block rounded-md border p-4 transition-colors hover:border-primary ${expiring ? "border-secondary bg-secondary/10" : "border-border"}`}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <div className="font-semibold text-foreground">{c.number} — {c.supplier}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-foreground">{c.number} — {c.supplier}</span>
+                      {expiring && (
+                        <Badge className={days < 0 ? "bg-destructive text-destructive-foreground" : "bg-secondary text-secondary-foreground"}>
+                          {days < 0 ? `Vencido há ${-days}d` : `Vence em ${days}d`}
+                        </Badge>
+                      )}
+                    </div>
                     <div className="text-xs text-muted-foreground">{c.object}</div>
                   </div>
                   <div className="text-right">
