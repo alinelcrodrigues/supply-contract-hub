@@ -5,6 +5,11 @@ export type Measurement = {
   date: string; // ISO yyyy-mm-dd
   description: string;
   amount: number;
+  startDate?: string;
+  endDate?: string;
+  otherExpenses?: number;
+  discount?: number;
+  observation?: string;
 };
 
 export const COST_CENTERS = [
