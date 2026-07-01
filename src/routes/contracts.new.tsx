@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addContract, COST_CENTERS, FINANCIAL_CATEGORIES, type Contract } from "@/lib/contracts-store";
+import { useActiveCostCenters } from "@/lib/params-store";
 
 export const Route = createFileRoute("/contracts/new")({
   head: () => ({
@@ -27,6 +28,8 @@ const months = [
 
 function NewContract() {
   const navigate = useNavigate();
+  const activeCC = useActiveCostCenters();
+  const costCenterOptions = activeCC.length > 0 ? activeCC.map((c) => c.name) : (COST_CENTERS as readonly string[]);
   const [form, setForm] = useState({
     number: "",
     supplier: "",
@@ -39,7 +42,7 @@ function NewContract() {
     adjustmentIndex: "IPCA" as Contract["adjustmentIndex"],
     adjustmentMonth: 1,
     signed: false,
-    costCenter: COST_CENTERS[0] as string,
+    costCenter: (activeCC[0]?.name ?? COST_CENTERS[0]) as string,
     financialCategory: FINANCIAL_CATEGORIES[0] as string,
   });
 
@@ -106,7 +109,7 @@ function NewContract() {
                 <Select value={form.costCenter} onValueChange={(v) => update("costCenter", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {COST_CENTERS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    {costCenterOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </Field>
