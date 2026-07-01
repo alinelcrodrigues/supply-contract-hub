@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Building2, KeyRound, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -133,18 +133,14 @@ function UserDialog({ open, onOpenChange, editing }: { open: boolean; onOpenChan
     name: "", email: "", roleId: "gestor", active: true,
   });
 
-  // Reset when opening
-  useState(() => form); // no-op to satisfy lint
-  const initialize = () => {
+  useEffect(() => {
+    if (!open) return;
     if (editing) setForm({ name: editing.name, email: editing.email, roleId: editing.roleId, active: editing.active });
     else setForm({ name: "", email: "", roleId: "gestor", active: true });
-  };
+  }, [open, editing]);
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => { if (v) initialize(); onOpenChange(v); }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{editing ? "Editar usuário" : "Novo usuário"}</DialogTitle>
