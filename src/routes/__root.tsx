@@ -8,7 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { LayoutDashboard, FilePlus2, FileText } from "lucide-react";
+import { LayoutDashboard, FilePlus2, FileText, Settings } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
@@ -138,6 +138,7 @@ function RootComponent() {
               <NavLink to="/" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
               <NavLink to="/contracts" icon={<FileText className="h-4 w-4" />} label="Contratos" />
               <NavLink to="/contracts/new" icon={<FilePlus2 className="h-4 w-4" />} label="Novo contrato" />
+              <NavLink to="/settings" icon={<Settings className="h-4 w-4" />} label="Parametrização" />
             </nav>
           </div>
         </header>
