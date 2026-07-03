@@ -97,7 +97,7 @@ export function useUpdateUser() {
   return useMutation({
     mutationFn: async ({ id, name, active, role }: { id: string; name?: string; active?: boolean; role?: RoleId }) => {
       if (name !== undefined || active !== undefined) {
-        const patch: Record<string, unknown> = {};
+        const patch: { name?: string; active?: boolean } = {};
         if (name !== undefined) patch.name = name;
         if (active !== undefined) patch.active = active;
         const { error } = await supabase.from("profiles").update(patch).eq("id", id);
