@@ -16,7 +16,7 @@ import {
   type Contract,
 } from "@/lib/contracts-store";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Dashboard — BALI CONSTRUTORA" },

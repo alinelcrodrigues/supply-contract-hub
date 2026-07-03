@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { addContract, COST_CENTERS, FINANCIAL_CATEGORIES, type Contract } from "@/lib/contracts-store";
 import { useActiveCostCenters } from "@/lib/params-store";
 
-export const Route = createFileRoute("/contracts/new")({
+export const Route = createFileRoute("/_authenticated/contracts/new")({
   head: () => ({
     meta: [
       { title: "Novo contrato — Gestão de Suprimentos" },

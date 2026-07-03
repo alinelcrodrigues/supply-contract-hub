@@ -30,7 +30,7 @@ import {
   type User,
 } from "@/lib/params-store";
 
-export const Route = createFileRoute("/settings")({
+export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
       { title: "Parametrização — BALI CONSTRUTORA" },

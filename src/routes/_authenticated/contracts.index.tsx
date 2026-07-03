@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { contractBalance, daysUntil, formatBRL, formatDate, useContractsStable } from "@/lib/contracts-store";
 
-export const Route = createFileRoute("/contracts/")({
+export const Route = createFileRoute("/_authenticated/contracts/")({
   head: () => ({
     meta: [
       { title: "Contratos — Gestão de Suprimentos" },
