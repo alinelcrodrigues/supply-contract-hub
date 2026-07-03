@@ -23,7 +23,7 @@ import {
   useContractsStable,
 } from "@/lib/contracts-store";
 
-export const Route = createFileRoute("/contracts/$id")({
+export const Route = createFileRoute("/_authenticated/contracts/$id")({
   head: () => ({
     meta: [
       { title: "Detalhes do contrato — Gestão de Suprimentos" },

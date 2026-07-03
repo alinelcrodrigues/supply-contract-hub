@@ -8,8 +8,12 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { LayoutDashboard, FilePlus2, FileText, Settings } from "lucide-react";
+import { LayoutDashboard, FilePlus2, FileText, LogOut, Settings } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useCurrentUserRole } from "@/lib/params-hooks";
+import { toast } from "sonner";
 
 import appCss from "../styles.css?url";
 import baliLogo from "@/assets/bali-logo.jpg.asset.json";
@@ -119,11 +123,45 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      router.invalidate();
+      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [router, queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-background text-foreground">
-        <header className="sticky top-0 z-30 border-b border-border bg-primary text-primary-foreground">
+        <AppHeader />
+        <main className="mx-auto max-w-7xl px-6 py-8">
+          <Outlet />
+        </main>
+        <Toaster richColors position="top-right" />
+      </div>
+    </QueryClientProvider>
+  );
+}
+
+function AppHeader() {
+  const router = useRouter();
+  const isAuthRoute = router.state.location.pathname.startsWith("/auth");
+  const { data: role } = useCurrentUserRole();
+
+  if (isAuthRoute) return null;
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Sessão encerrada");
+    router.navigate({ to: "/auth", replace: true });
+  };
+
+  return (
+    <header className="sticky top-0 z-30 border-b border-border bg-primary text-primary-foreground">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
             <Link to="/" className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-md bg-white p-1">
@@ -138,16 +176,21 @@ function RootComponent() {
               <NavLink to="/" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
               <NavLink to="/contracts" icon={<FileText className="h-4 w-4" />} label="Contratos" />
               <NavLink to="/contracts/new" icon={<FilePlus2 className="h-4 w-4" />} label="Novo contrato" />
-              <NavLink to="/settings" icon={<Settings className="h-4 w-4" />} label="Parametrização" />
+              {role === "admin" && (
+                <NavLink to="/settings" icon={<Settings className="h-4 w-4" />} label="Parametrização" />
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={signOut}
+                className="ml-2 gap-2 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+                Sair
+              </Button>
             </nav>
           </div>
-        </header>
-        <main className="mx-auto max-w-7xl px-6 py-8">
-          <Outlet />
-        </main>
-        <Toaster richColors position="top-right" />
-      </div>
-    </QueryClientProvider>
+    </header>
   );
 }
 

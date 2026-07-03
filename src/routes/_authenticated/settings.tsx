@@ -14,23 +14,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  addCostCenter,
-  addUser,
-  deleteCostCenter,
-  deleteUser,
   PERMISSIONS,
   ROLES,
-  setRolePermission,
-  updateCostCenter,
-  updateUser,
-  useParams,
-  type CostCenterRecord,
+  useCostCenters,
+  useCostCenterMutations,
+  useCurrentUserRole,
+  useRolePermissions,
+  useToggleRolePermission,
+  useUpdateUser,
+  useUsers,
+  type CostCenter,
   type PermissionId,
   type RoleId,
-  type User,
-} from "@/lib/params-store";
+  type UserRow,
+} from "@/lib/params-hooks";
 
-export const Route = createFileRoute("/settings")({
+export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
       { title: "Parametrização — BALI CONSTRUTORA" },
@@ -41,12 +40,16 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
+  const { data: role } = useCurrentUserRole();
+  const isAdmin = role === "admin";
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-foreground">Parametrização</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Configure usuários, permissões e centros de custo do sistema.
+          {!isAdmin && " Apenas administradores podem editar."}
         </p>
       </div>
 
@@ -57,9 +60,9 @@ function SettingsPage() {
           <TabsTrigger value="cc" className="gap-2"><Building2 className="h-4 w-4" />Centros de custo</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="users"><UsersTab /></TabsContent>
-        <TabsContent value="roles"><RolesTab /></TabsContent>
-        <TabsContent value="cc"><CostCentersTab /></TabsContent>
+        <TabsContent value="users"><UsersTab isAdmin={isAdmin} /></TabsContent>
+        <TabsContent value="roles"><RolesTab isAdmin={isAdmin} /></TabsContent>
+        <TabsContent value="cc"><CostCentersTab isAdmin={isAdmin} /></TabsContent>
       </Tabs>
     </div>
   );
@@ -70,22 +73,22 @@ function roleLabel(id: RoleId) {
 }
 
 /* ---------- Users ---------- */
-function UsersTab() {
-  const { users } = useParams();
-  const [editing, setEditing] = useState<User | null>(null);
-  const [open, setOpen] = useState(false);
-
-  const openNew = () => { setEditing(null); setOpen(true); };
-  const openEdit = (u: User) => { setEditing(u); setOpen(true); };
+function UsersTab({ isAdmin }: { isAdmin: boolean }) {
+  const { data: users = [], isLoading } = useUsers();
+  const [editing, setEditing] = useState<UserRow | null>(null);
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">Usuários cadastrados</CardTitle>
-        <Button size="sm" onClick={openNew}><Plus className="mr-1 h-4 w-4" />Novo usuário</Button>
+        <div className="text-xs text-muted-foreground">
+          Novos usuários são criados na tela de login (Criar conta).
+        </div>
       </CardHeader>
       <CardContent>
-        {users.length === 0 ? (
+        {isLoading ? (
+          <EmptyState text="Carregando..." />
+        ) : users.length === 0 ? (
           <EmptyState text="Nenhum usuário cadastrado." />
         ) : (
           <div className="overflow-x-auto">
@@ -104,16 +107,15 @@ function UsersTab() {
                   <TableRow key={u.id}>
                     <TableCell className="font-medium">{u.name}</TableCell>
                     <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                    <TableCell><Badge variant="outline">{roleLabel(u.roleId)}</Badge></TableCell>
+                    <TableCell><Badge variant="outline">{roleLabel(u.role)}</Badge></TableCell>
                     <TableCell>
                       {u.active
                         ? <Badge className="bg-primary/15 text-primary hover:bg-primary/15">Ativo</Badge>
                         : <Badge variant="secondary">Inativo</Badge>}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="ghost" onClick={() => openEdit(u)}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="ghost" onClick={() => { if (confirm(`Remover ${u.name}?`)) { deleteUser(u.id); toast.success("Usuário removido"); } }}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                      <Button size="sm" variant="ghost" disabled={!isAdmin} onClick={() => setEditing(u)}>
+                        <Pencil className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -123,28 +125,25 @@ function UsersTab() {
           </div>
         )}
       </CardContent>
-      <UserDialog open={open} onOpenChange={setOpen} editing={editing} />
+      <UserDialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)} editing={editing} />
     </Card>
   );
 }
 
-function UserDialog({ open, onOpenChange, editing }: { open: boolean; onOpenChange: (v: boolean) => void; editing: User | null }) {
-  const [form, setForm] = useState<{ name: string; email: string; roleId: RoleId; active: boolean }>({
-    name: "", email: "", roleId: "gestor", active: true,
-  });
+function UserDialog({ open, onOpenChange, editing }: { open: boolean; onOpenChange: (v: boolean) => void; editing: UserRow | null }) {
+  const [form, setForm] = useState<{ name: string; role: RoleId; active: boolean }>({ name: "", role: "gestor", active: true });
+  const { mutate: update, isPending } = useUpdateUser();
 
   useEffect(() => {
-    if (!open) return;
-    if (editing) setForm({ name: editing.name, email: editing.email, roleId: editing.roleId, active: editing.active });
-    else setForm({ name: "", email: "", roleId: "gestor", active: true });
-  }, [open, editing]);
+    if (editing) setForm({ name: editing.name, role: editing.role, active: editing.active });
+  }, [editing]);
+
+  if (!editing) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{editing ? "Editar usuário" : "Novo usuário"}</DialogTitle>
-        </DialogHeader>
+        <DialogHeader><DialogTitle>Editar usuário</DialogTitle></DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Nome</Label>
@@ -152,11 +151,11 @@ function UserDialog({ open, onOpenChange, editing }: { open: boolean; onOpenChan
           </div>
           <div className="space-y-2">
             <Label>E-mail</Label>
-            <Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
+            <Input value={editing.email} disabled />
           </div>
           <div className="space-y-2">
             <Label>Papel</Label>
-            <Select value={form.roleId} onValueChange={(v) => setForm((f) => ({ ...f, roleId: v as RoleId }))}>
+            <Select value={form.role} onValueChange={(v) => setForm((f) => ({ ...f, role: v as RoleId }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {ROLES.map((r) => <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>)}
@@ -166,7 +165,7 @@ function UserDialog({ open, onOpenChange, editing }: { open: boolean; onOpenChan
           <div className="flex items-center justify-between rounded-md border border-border p-3">
             <div>
               <div className="text-sm font-medium">Usuário ativo</div>
-              <div className="text-xs text-muted-foreground">Usuários inativos não podem acessar o sistema.</div>
+              <div className="text-xs text-muted-foreground">Inativos permanecem cadastrados mas não usam o sistema.</div>
             </div>
             <Switch checked={form.active} onCheckedChange={(v) => setForm((f) => ({ ...f, active: v }))} />
           </div>
@@ -174,11 +173,16 @@ function UserDialog({ open, onOpenChange, editing }: { open: boolean; onOpenChan
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button
+            disabled={isPending}
             onClick={() => {
-              if (!form.name.trim() || !form.email.trim()) { toast.error("Preencha nome e e-mail"); return; }
-              if (editing) { updateUser(editing.id, form); toast.success("Usuário atualizado"); }
-              else { addUser(form); toast.success("Usuário cadastrado"); }
-              onOpenChange(false);
+              if (!form.name.trim()) { toast.error("Informe o nome"); return; }
+              update(
+                { id: editing.id, name: form.name, active: form.active, role: form.role },
+                {
+                  onSuccess: () => { toast.success("Usuário atualizado"); onOpenChange(false); },
+                  onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao salvar"),
+                },
+              );
             }}
           >Salvar</Button>
         </DialogFooter>
@@ -188,24 +192,22 @@ function UserDialog({ open, onOpenChange, editing }: { open: boolean; onOpenChan
 }
 
 /* ---------- Roles / Permissions ---------- */
-function RolesTab() {
-  const { perms } = useParams();
+function RolesTab({ isAdmin }: { isAdmin: boolean }) {
+  const { data: perms } = useRolePermissions();
+  const { mutate: toggle } = useToggleRolePermission();
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Matriz de permissões</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Defina o que cada papel pode fazer no sistema.
-        </p>
+        <p className="text-sm text-muted-foreground">Defina o que cada papel pode fazer.</p>
       </CardHeader>
       <CardContent className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Permissão</TableHead>
-              {ROLES.map((r) => (
-                <TableHead key={r.id} className="text-center">{r.label}</TableHead>
-              ))}
+              {ROLES.map((r) => <TableHead key={r.id} className="text-center">{r.label}</TableHead>)}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -216,12 +218,18 @@ function RolesTab() {
                   <div className="text-xs text-muted-foreground">{p.id}</div>
                 </TableCell>
                 {ROLES.map((r) => {
-                  const enabled = perms[r.id]?.includes(p.id as PermissionId) ?? false;
+                  const enabled = perms?.[r.id]?.has(p.id) ?? false;
                   return (
                     <TableCell key={r.id} className="text-center">
                       <Checkbox
+                        disabled={!isAdmin}
                         checked={enabled}
-                        onCheckedChange={(v) => setRolePermission(r.id, p.id as PermissionId, !!v)}
+                        onCheckedChange={(v) =>
+                          toggle(
+                            { role: r.id, permission: p.id as PermissionId, enabled: !!v },
+                            { onError: (e) => toast.error(e instanceof Error ? e.message : "Erro") },
+                          )
+                        }
                       />
                     </TableCell>
                   );
@@ -236,38 +244,45 @@ function RolesTab() {
 }
 
 /* ---------- Cost Centers ---------- */
-function CostCentersTab() {
-  const { cc } = useParams();
+function CostCentersTab({ isAdmin }: { isAdmin: boolean }) {
+  const { data: cc = [] } = useCostCenters();
+  const { add, update, remove } = useCostCenterMutations();
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
 
   const submit = () => {
-    if (!name.trim()) { toast.error("Informe o nome do centro de custo"); return; }
-    addCostCenter({ name: name.trim(), code: code.trim() || undefined, active: true });
-    setName(""); setCode("");
-    toast.success("Centro de custo cadastrado");
+    if (!name.trim()) { toast.error("Informe o nome"); return; }
+    add.mutate(
+      { code: code.trim(), name: name.trim() },
+      {
+        onSuccess: () => { setName(""); setCode(""); toast.success("Centro de custo cadastrado"); },
+        onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+      },
+    );
   };
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader><CardTitle className="text-base">Novo centro de custo</CardTitle></CardHeader>
-        <CardContent>
-          <div className="grid gap-3 sm:grid-cols-[160px_1fr_auto]">
-            <div className="space-y-1">
-              <Label>Código</Label>
-              <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="CC-010" />
+      {isAdmin && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Novo centro de custo</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-[160px_1fr_auto]">
+              <div className="space-y-1">
+                <Label>Código</Label>
+                <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="CC-010" />
+              </div>
+              <div className="space-y-1">
+                <Label>Nome</Label>
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Obra Residencial Sul" />
+              </div>
+              <div className="flex items-end">
+                <Button onClick={submit} disabled={add.isPending}><Plus className="mr-1 h-4 w-4" />Adicionar</Button>
+              </div>
             </div>
-            <div className="space-y-1">
-              <Label>Nome</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Obra Residencial Sul" />
-            </div>
-            <div className="flex items-end">
-              <Button onClick={submit}><Plus className="mr-1 h-4 w-4" />Adicionar</Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader><CardTitle className="text-base">Centros de custo cadastrados</CardTitle></CardHeader>
@@ -286,15 +301,28 @@ function CostCentersTab() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {cc.map((c: CostCenterRecord) => (
+                  {cc.map((c: CostCenter) => (
                     <TableRow key={c.id}>
                       <TableCell className="font-mono text-xs">{c.code || "—"}</TableCell>
                       <TableCell className="font-medium">{c.name}</TableCell>
                       <TableCell>
-                        <Switch checked={c.active} onCheckedChange={(v) => updateCostCenter(c.id, { active: v })} />
+                        <Switch
+                          disabled={!isAdmin}
+                          checked={c.active}
+                          onCheckedChange={(v) => update.mutate({ id: c.id, patch: { active: v } })}
+                        />
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button size="sm" variant="ghost" onClick={() => { if (confirm(`Remover ${c.name}?`)) { deleteCostCenter(c.id); toast.success("Removido"); } }}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={!isAdmin}
+                          onClick={() => {
+                            if (confirm(`Remover ${c.name}?`)) {
+                              remove.mutate(c.id, { onSuccess: () => toast.success("Removido") });
+                            }
+                          }}
+                        >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </TableCell>
