@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addContract, COST_CENTERS, FINANCIAL_CATEGORIES, type Contract } from "@/lib/contracts-store";
-import { useActiveCostCenters } from "@/lib/params-store";
+import { useActiveCostCenters } from "@/lib/params-hooks";
 
 export const Route = createFileRoute("/_authenticated/contracts/new")({
   head: () => ({
@@ -28,8 +28,9 @@ const months = [
 
 function NewContract() {
   const navigate = useNavigate();
-  const activeCC = useActiveCostCenters();
-  const costCenterOptions = activeCC.length > 0 ? activeCC.map((c) => c.name) : (COST_CENTERS as readonly string[]);
+  const { data: activeCC = [] } = useActiveCostCenters();
+  const costCenterOptions =
+    activeCC.length > 0 ? activeCC.map((c) => c.name) : (COST_CENTERS as readonly string[]);
   const [form, setForm] = useState({
     number: "",
     supplier: "",
