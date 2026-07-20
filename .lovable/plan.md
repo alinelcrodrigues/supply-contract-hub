@@ -1,46 +1,33 @@
-## Objetivo
+## Escopo
 
-Ativar o **Lovable Cloud** no projeto BALI CONSTRUTORA para ter banco de dados real, autenticação e permissões de verdade — substituindo o armazenamento atual em `localStorage` da aba **Parametrização**.
+Criar o componente `src/components/AditivosContratuais.tsx` como um bloco puramente visual/local, sem alterar o store de contratos nem o `globalValue`. Renderizá-lo na tela de detalhes do contrato (`src/routes/_authenticated/contracts.$id.tsx`).
 
-## O que será feito
+## O que o componente faz
 
-### 1. Ativar Lovable Cloud
-- Provisiona banco de dados, autenticação e storage integrados (sem necessidade de contas externas).
+Props: `contractId: string`, `valorOriginal: number`.
 
-### 2. Autenticação real de usuários
-- Tela de login (`/auth`) com **e-mail + senha** e **Login com Google**.
-- Layout protegido: todas as rotas do sistema (contratos, medições, parametrização) passam a exigir login.
-- Botão de **Sair** no cabeçalho.
-- Primeiro usuário que se cadastrar vira **Administrador** automaticamente.
+Estado local (dentro do próprio componente, sem persistência):
+- Lista de aditivos adicionados na sessão.
+- Cada aditivo tem: `tipo` ("Ajuste de valor/prazo" | "Inclusão de item"), `descricao`, `valor` (número, pode ser negativo para reduções), `data`.
 
-### 3. Migração das tabelas para o banco
-Criar no banco (com RLS — Row Level Security):
-- `profiles` — nome e e-mail de cada usuário logado.
-- `user_roles` — papel de cada usuário (`admin`, `gestor`, `financeiro`, `leitura`), em tabela separada por segurança.
-- `cost_centers` — centros de custo (código, nome, ativo).
-- `role_permissions` — matriz de permissões editável (papel × permissão).
+UI:
+- Card "Aditivos contratuais" com formulário inline:
+  - `Select` "Tipo de aditivo" (as duas opções acima).
+  - `Input` descrição, `Input` valor (R$), `Input` data.
+  - Botão "Adicionar aditivo".
+- Lista dos aditivos adicionados, cada linha com `Badge` do tipo, descrição, valor formatado em BRL, data e botão `X` (lucide-react) para remover.
+- Rodapé mostrando: Valor original, Soma dos aditivos, "Valor atual estimado" = `valorOriginal + soma dos aditivos` (apenas exibição, não grava nada).
 
-Os contratos e medições **continuam em `localStorage` por enquanto** — a migração deles para o banco fica para uma próxima etapa, para não misturar dois trabalhos grandes.
+Sem chamada a `updateContract` nem escrita em Lovable Cloud/localStorage — o estado vive só enquanto a tela estiver montada, conforme o "escopo menor" solicitado.
 
-### 4. Atualizar a aba Parametrização
-- **Usuários:** lista real do banco. Admin pode convidar novo usuário (cria conta + define papel) e alterar papel/ativação.
-- **Permissões:** matriz continua editável, mas persistida no banco e compartilhada entre todos os usuários.
-- **Centros de custo:** CRUD passa a gravar no banco; a tela de cadastro de contrato lê a mesma tabela.
+## Integração
 
-### 5. Aplicar permissões na interface
-- Apenas quem tem `params.manage` vê a aba **Parametrização**.
-- Apenas quem tem `contracts.manage` vê botões de novo contrato / editar.
-- Perfil "Somente leitura" vê tudo, mas sem botões de ação.
+- Em `src/routes/_authenticated/contracts.$id.tsx`, importar e renderizar `<AditivosContratuais contractId={contract.id} valorOriginal={contract.globalValue} />` como uma seção nova entre o card principal e o grid de medições.
+- Nenhuma outra mudança na rota, no store ou nas medições.
 
-## O que NÃO muda nesta etapa
-- Visual e organização por centro de custo permanecem como estão.
-- Contratos e medições continuam salvos localmente (migração futura).
-- Nenhum dado atual do `localStorage` é perdido — ele apenas deixa de ser usado para usuários/permissões/centros de custo.
+## Detalhes técnicos
 
-## Detalhes técnicos (para referência)
-- Server functions (`createServerFn`) com `requireSupabaseAuth` para todas as operações de parametrização.
-- Função `has_role(user_id, role)` `SECURITY DEFINER` para checagens de RLS sem recursão.
-- Rota `_authenticated/` gerenciada pela integração protege o app; `/auth` fica pública.
-- Google OAuth configurado via `supabase--configure_social_auth`.
-
-Confirma para eu implementar?
+- Reutilizar `Select`, `Badge`, `Card`, `Input`, `Label`, `Button` de `@/components/ui/*` (todos já existem).
+- Ícone `X` de `lucide-react` (já instalado).
+- Formatação BRL via `formatBRL` de `@/lib/contracts-store`.
+- IDs locais gerados via `crypto.randomUUID()`.
