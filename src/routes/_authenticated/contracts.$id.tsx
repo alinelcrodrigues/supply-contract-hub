@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { AditivosContratuais } from "@/components/AditivosContratuais";
 import {
   addMeasurement,
   contractBalance,
@@ -212,6 +213,8 @@ function ContractDetail() {
           </div>
         </CardContent>
       </Card>
+
+      <AditivosContratuais contractId={contract.id} valorOriginal={contract.globalValue} />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <Card>
