@@ -6,8 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DashboardCentroCusto } from "@/components/DashboardCentroCusto";
 import {
   contractBalance,
+  contractCurrentValue,
   daysUntil,
   formatBRL,
   formatDate,
@@ -33,7 +35,7 @@ function Dashboard() {
   const costCenters = Array.from(new Set(contracts.map((c) => c.costCenter))).sort();
   const filtered = filter === "ALL" ? contracts : contracts.filter((c) => c.costCenter === filter);
 
-  const totalGlobal = filtered.reduce((s, c) => s + c.globalValue, 0);
+  const totalGlobal = filtered.reduce((s, c) => s + contractCurrentValue(c), 0);
   const totalPaid = filtered.reduce((s, c) => s + contractBalance(c).paid, 0);
   const totalBalance = totalGlobal - totalPaid;
   const signedCount = filtered.filter((c) => c.signed).length;
@@ -51,26 +53,6 @@ function Dashboard() {
     .sort((a, b) => a.days - b.days);
 
   const unsigned = filtered.filter((c) => !c.signed);
-
-  // Per cost-center aggregates (always full dataset for overview comparison)
-  const byCostCenter = costCenters.map((cc) => {
-    const items = contracts.filter((c) => c.costCenter === cc);
-    const global = items.reduce((s, c) => s + c.globalValue, 0);
-    const paid = items.reduce((s, c) => s + contractBalance(c).paid, 0);
-    const catsMap = new Map<string, { global: number; paid: number }>();
-    for (const c of items) {
-      const cur = catsMap.get(c.financialCategory) ?? { global: 0, paid: 0 };
-      cur.global += c.globalValue;
-      cur.paid += contractBalance(c).paid;
-      catsMap.set(c.financialCategory, cur);
-    }
-    const cats = Array.from(catsMap.entries())
-      .map(([name, v]) => ({ name, ...v }))
-      .sort((a, b) => b.paid - a.paid);
-    return { cc, global, paid, balance: global - paid, count: items.length, cats };
-  });
-
-  const maxCcPaid = Math.max(1, ...byCostCenter.map((x) => x.paid));
 
   return (
     <div className="space-y-8">
@@ -106,66 +88,8 @@ function Dashboard() {
         <Kpi icon={<CheckCircle2 className="h-5 w-5" />} label="Saldo a executar" value={formatBRL(totalBalance)} accent />
       </div>
 
-      {/* Cost center analysis */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Building className="h-4 w-4 text-primary" />
-            Gasto por centro de custo
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {byCostCenter.length === 0 ? (
-            <EmptyMsg text="Cadastre contratos para visualizar a análise." />
-          ) : (
-            byCostCenter.map((x) => (
-              <div key={x.cc} className="rounded-md border border-border p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <div className="font-semibold text-foreground">{x.cc}</div>
-                    <div className="text-xs text-muted-foreground">{x.count} contratos · Global {formatBRL(x.global)}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs text-muted-foreground">Realizado</div>
-                    <div className="text-lg font-bold text-primary">{formatBRL(x.paid)}</div>
-                  </div>
-                </div>
-                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full bg-primary"
-                    style={{ width: `${(x.paid / maxCcPaid) * 100}%` }}
-                  />
-                </div>
-                <div className="mt-4 space-y-2">
-                  <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Por categoria financeira
-                  </div>
-                  {x.cats.map((cat) => {
-                    const pct = x.paid ? (cat.paid / x.paid) * 100 : 0;
-                    return (
-                      <div key={cat.name} className="grid grid-cols-[1fr_auto] items-center gap-3 text-sm">
-                        <div className="min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="truncate font-medium">{cat.name}</span>
-                            <span className="text-xs text-muted-foreground">{pct.toFixed(0)}%</span>
-                          </div>
-                          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                            <div className="h-full bg-secondary" style={{ width: `${pct}%` }} />
-                          </div>
-                        </div>
-                        <div className="text-right text-sm font-semibold tabular-nums">
-                          {formatBRL(cat.paid)}
-                          <div className="text-xs font-normal text-muted-foreground">de {formatBRL(cat.global)}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+      <DashboardCentroCusto costCenterFilter={filter} />
+
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="border-border">

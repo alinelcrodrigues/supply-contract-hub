@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { addContract, COST_CENTERS, FINANCIAL_CATEGORIES, type Contract } from "@/lib/contracts-store";
+import { addContract, FINANCIAL_CATEGORIES, type Contract } from "@/lib/contracts-store";
 import { useActiveCostCenters } from "@/lib/params-hooks";
 
 export const Route = createFileRoute("/_authenticated/contracts/new")({
@@ -29,8 +29,7 @@ const months = [
 function NewContract() {
   const navigate = useNavigate();
   const { data: activeCC = [] } = useActiveCostCenters();
-  const costCenterOptions =
-    activeCC.length > 0 ? activeCC.map((c) => c.name) : (COST_CENTERS as readonly string[]);
+  const costCenterOptions = activeCC;
   const [form, setForm] = useState({
     number: "",
     supplier: "",
@@ -43,7 +42,7 @@ function NewContract() {
     adjustmentIndex: "IPCA" as Contract["adjustmentIndex"],
     adjustmentMonth: 1,
     signed: false,
-    costCenter: (activeCC[0]?.name ?? COST_CENTERS[0]) as string,
+    costCenterId: "",
     financialCategory: FINANCIAL_CATEGORIES[0] as string,
   });
 
@@ -52,7 +51,7 @@ function NewContract() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const value = Number(form.globalValue);
-    if (!form.number || !form.supplier || !form.startDate || !form.endDate || !value || !form.costCenter || !form.financialCategory) {
+    if (!form.number || !form.supplier || !form.startDate || !form.endDate || !value || !form.costCenterId || !form.financialCategory) {
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
@@ -61,7 +60,8 @@ function NewContract() {
       return;
     }
     const budgetValue = form.budgetNotApplicable ? null : Number(form.budgetValue) || null;
-    const created = addContract({
+    void (async () => {
+    const created = await addContract({
       number: form.number,
       supplier: form.supplier,
       object: form.object,
@@ -72,11 +72,16 @@ function NewContract() {
       adjustmentIndex: form.adjustmentIndex,
       adjustmentMonth: form.adjustmentMonth,
       signed: form.signed,
-      costCenter: form.costCenter,
+      costCenterId: form.costCenterId,
       financialCategory: form.financialCategory,
+    }).catch((err) => {
+      toast.error(err?.message ?? "Não foi possível cadastrar o contrato.");
+      return null;
     });
+    if (!created) return;
     toast.success("Contrato cadastrado.");
     navigate({ to: "/contracts/$id", params: { id: created.id } });
+    })();
   };
 
   return (
@@ -107,10 +112,10 @@ function NewContract() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Centro de custo *">
-                <Select value={form.costCenter} onValueChange={(v) => update("costCenter", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select value={form.costCenterId} onValueChange={(v) => update("costCenterId", v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    {costCenterOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    {costCenterOptions.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </Field>

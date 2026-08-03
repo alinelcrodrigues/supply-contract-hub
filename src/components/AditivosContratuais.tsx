@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { useState } from "react";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,42 +13,44 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatBRL, formatDate } from "@/lib/contracts-store";
-import { toast } from "sonner";
-
-type TipoAditivo = "Ajuste de valor/prazo" | "Inclusão de item";
-
-type Aditivo = {
-  id: string;
-  tipo: TipoAditivo;
-  descricao: string;
-  valor: number;
-  data: string;
-};
+import {
+  addAddendum,
+  deleteAddendum,
+  formatBRL,
+  formatDate,
+  FINANCIAL_CATEGORIES,
+  type Addendum,
+  type AddendumType,
+} from "@/lib/contracts-store";
+import { useActiveCostCenters } from "@/lib/params-hooks";
 
 interface Props {
   contractId: string;
   valorOriginal: number;
+  aditivos: Addendum[];
 }
 
-export function AditivosContratuais({ contractId: _contractId, valorOriginal }: Props) {
+const TIPO_LABEL: Record<AddendumType, string> = {
+  ajuste_valor: "Ajuste de valor/prazo",
+  inclusao_item: "Inclusão de item",
+};
+
+export function AditivosContratuais({ contractId, valorOriginal, aditivos }: Props) {
   const todayIso = new Date().toISOString().slice(0, 10);
-  const [aditivos, setAditivos] = useState<Aditivo[]>([]);
-  const [form, setForm] = useState<{
-    tipo: TipoAditivo;
-    descricao: string;
-    valor: string;
-    data: string;
-  }>({
-    tipo: "Ajuste de valor/prazo",
+  const { data: costCenters = [] } = useActiveCostCenters();
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    tipo: "ajuste_valor" as AddendumType,
     descricao: "",
     valor: "",
     data: todayIso,
+    costCenterId: "",
+    financialCategory: FINANCIAL_CATEGORIES[0] as string,
   });
 
-  const somaAditivos = useMemo(
-    () => aditivos.reduce((acc, a) => acc + a.valor, 0),
-    [aditivos],
+  const somaAditivos = aditivos.reduce(
+    (acc, a) => acc + (a.tipo === "ajuste_valor" ? a.value : a.items.reduce((s, i) => s + i.value, 0)),
+    0,
   );
   const valorAtual = valorOriginal + somaAditivos;
 
@@ -58,160 +61,164 @@ export function AditivosContratuais({ contractId: _contractId, valorOriginal }: 
       toast.error("Informe a descrição do aditivo.");
       return;
     }
-    if (Number.isNaN(valor)) {
-      toast.error("Informe um valor numérico (use negativo para reduções).");
+    if (!valor) {
+      toast.error("Informe o valor do aditivo.");
       return;
     }
-    setAditivos((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        tipo: form.tipo,
-        descricao: form.descricao.trim(),
-        valor,
-        data: form.data || todayIso,
-      },
-    ]);
-    setForm({ tipo: form.tipo, descricao: "", valor: "", data: todayIso });
-  };
-
-  const remover = (id: string) => {
-    setAditivos((prev) => prev.filter((a) => a.id !== id));
+    if (form.tipo === "inclusao_item" && !form.costCenterId) {
+      toast.error("Selecione o centro de custo do item incluído.");
+      return;
+    }
+    setSaving(true);
+    void addAddendum({
+      contractId,
+      tipo: form.tipo,
+      description: form.descricao.trim(),
+      value: valor,
+      date: form.data,
+      item:
+        form.tipo === "inclusao_item"
+          ? {
+              description: form.descricao.trim(),
+              value: valor,
+              costCenterId: form.costCenterId,
+              financialCategory: form.financialCategory,
+            }
+          : undefined,
+    })
+      .then(() => {
+        toast.success("Aditivo registrado.");
+        setForm({ ...form, descricao: "", valor: "" });
+      })
+      .catch((err) => toast.error(err?.message ?? "Não foi possível salvar o aditivo."))
+      .finally(() => setSaving(false));
   };
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">Aditivos contratuais</CardTitle>
+        <div className="text-right">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">Valor vigente</div>
+          <div className="text-sm font-semibold text-primary">{formatBRL(valorAtual)}</div>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <form onSubmit={adicionar} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="space-y-2 lg:col-span-1">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-              Tipo de aditivo
-            </Label>
-            <Select
-              value={form.tipo}
-              onValueChange={(v) => setForm({ ...form, tipo: v as TipoAditivo })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Ajuste de valor/prazo">Ajuste de valor/prazo</SelectItem>
-                <SelectItem value="Inclusão de item">Inclusão de item</SelectItem>
-              </SelectContent>
-            </Select>
+      <CardContent className="space-y-5">
+        <form onSubmit={adicionar} className="grid gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Tipo de aditivo</Label>
+              <Select value={form.tipo} onValueChange={(v) => setForm({ ...form, tipo: v as AddendumType })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ajuste_valor">Ajuste de valor/prazo</SelectItem>
+                  <SelectItem value="inclusao_item">Inclusão de item</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Data</Label>
+              <Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
+            </div>
           </div>
-          <div className="space-y-2 lg:col-span-2">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-              Descrição
-            </Label>
+
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground">Descrição</Label>
             <Input
               value={form.descricao}
               onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-              placeholder="Ex.: Prorrogação de 30 dias"
+              placeholder="Ex.: Aditivo 01 — reajuste INCC"
             />
           </div>
-          <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-              Valor (R$)
-            </Label>
-            <Input
-              type="number"
-              step="0.01"
-              value={form.valor}
-              onChange={(e) => setForm({ ...form, valor: e.target.value })}
-              placeholder="0,00"
-            />
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Valor (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={form.valor}
+                onChange={(e) => setForm({ ...form, valor: e.target.value })}
+                placeholder="0,00"
+              />
+            </div>
+            {form.tipo === "inclusao_item" && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Centro de custo</Label>
+                  <Select value={form.costCenterId} onValueChange={(v) => setForm({ ...form, costCenterId: v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      {costCenters.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Categoria financeira</Label>
+                  <Select value={form.financialCategory} onValueChange={(v) => setForm({ ...form, financialCategory: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {FINANCIAL_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
           </div>
-          <div className="space-y-2">
-            <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-              Data
-            </Label>
-            <Input
-              type="date"
-              value={form.data}
-              onChange={(e) => setForm({ ...form, data: e.target.value })}
-            />
-          </div>
-          <div className="sm:col-span-2 lg:col-span-5">
-            <Button type="submit" variant="secondary" className="font-semibold">
-              Adicionar aditivo
+
+          <p className="text-xs text-muted-foreground">
+            Aditivos de ajuste de valor são rateados proporcionalmente entre os centros de custo do contrato.
+            Itens incluídos por aditivo somam no centro de custo escolhido.
+          </p>
+
+          <div className="flex justify-end">
+            <Button type="submit" variant="secondary" className="font-semibold" disabled={saving}>
+              {saving ? "Salvando..." : "Adicionar aditivo"}
             </Button>
           </div>
         </form>
 
         {aditivos.length === 0 ? (
-          <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            Nenhum aditivo adicionado nesta sessão.
+          <div className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+            Nenhum aditivo registrado.
           </div>
         ) : (
-          <ul className="space-y-2">
-            {aditivos.map((a) => (
-              <li
-                key={a.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card p-3"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline">{a.tipo}</Badge>
-                  <span className="text-sm font-medium">{a.descricao}</span>
-                  <span className="text-xs text-muted-foreground">{formatDate(a.data)}</span>
+          <div className="space-y-2">
+            {aditivos.map((a) => {
+              const total = a.tipo === "ajuste_valor" ? a.value : a.items.reduce((s, i) => s + i.value, 0);
+              return (
+                <div key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="outline">{TIPO_LABEL[a.tipo]}</Badge>
+                      <span className="text-sm font-medium">{a.description}</span>
+                    </div>
+                    <div className="mt-0.5 text-xs text-muted-foreground">
+                      {formatDate(a.date)}
+                      {a.items.map((i) => ` · ${i.costCenter}`).join("")}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold tabular-nums text-primary">{formatBRL(total)}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm("Remover este aditivo?")) {
+                          void deleteAddendum(a.id).catch(() => toast.error("Não foi possível remover."));
+                        }
+                      }}
+                      className="text-muted-foreground hover:text-destructive"
+                      aria-label="Remover aditivo"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`text-sm font-semibold ${a.valor < 0 ? "text-destructive" : "text-primary"}`}
-                  >
-                    {a.valor >= 0 ? "+" : "−"}
-                    {formatBRL(Math.abs(a.valor))}
-                  </span>
-                  <button
-                    onClick={() => remover(a.id)}
-                    className="text-muted-foreground hover:text-destructive"
-                    aria-label="Remover aditivo"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+              );
+            })}
+          </div>
         )}
-
-        <div className="grid gap-3 rounded-md border border-border bg-muted/40 p-4 sm:grid-cols-3">
-          <SummaryItem label="Valor original" value={formatBRL(valorOriginal)} />
-          <SummaryItem
-            label="Soma dos aditivos"
-            value={`${somaAditivos >= 0 ? "+" : "−"}${formatBRL(Math.abs(somaAditivos))}`}
-          />
-          <SummaryItem label="Valor atual estimado" value={formatBRL(valorAtual)} highlight />
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Os aditivos aqui listados são apenas simulações desta sessão e não alteram o valor global
-          persistido do contrato.
-        </p>
       </CardContent>
     </Card>
-  );
-}
-
-function SummaryItem({
-  label,
-  value,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) {
-  return (
-    <div>
-      <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div
-        className={`mt-1 text-sm font-semibold ${highlight ? "text-primary" : "text-foreground"}`}
-      >
-        {value}
-      </div>
-    </div>
   );
 }

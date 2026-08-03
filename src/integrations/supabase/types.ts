@@ -14,6 +14,208 @@ export type Database = {
   }
   public: {
     Tables: {
+      contract_addendum_items: {
+        Row: {
+          addendum_id: string
+          cost_center_id: string | null
+          created_at: string
+          description: string
+          financial_category: string
+          id: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          addendum_id: string
+          cost_center_id?: string | null
+          created_at?: string
+          description?: string
+          financial_category?: string
+          id?: string
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          addendum_id?: string
+          cost_center_id?: string | null
+          created_at?: string
+          description?: string
+          financial_category?: string
+          id?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_addendum_items_addendum_id_fkey"
+            columns: ["addendum_id"]
+            isOneToOne: false
+            referencedRelation: "contract_addendums"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_addendum_items_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_addendums: {
+        Row: {
+          contract_id: string
+          created_at: string
+          date: string
+          description: string
+          id: string
+          tipo: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          tipo?: string
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          tipo?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_addendums_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_items: {
+        Row: {
+          contract_id: string
+          cost_center_id: string | null
+          created_at: string
+          description: string
+          financial_category: string
+          id: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          contract_id: string
+          cost_center_id?: string | null
+          created_at?: string
+          description?: string
+          financial_category?: string
+          id?: string
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          contract_id?: string
+          cost_center_id?: string | null
+          created_at?: string
+          description?: string
+          financial_category?: string
+          id?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_items_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_items_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          adjustment_index: string
+          adjustment_month: number
+          budget_value: number | null
+          cost_center_id: string | null
+          created_at: string
+          created_by: string | null
+          end_date: string
+          financial_category: string
+          global_value: number
+          id: string
+          number: string
+          object: string
+          signed: boolean
+          start_date: string
+          supplier: string
+          updated_at: string
+        }
+        Insert: {
+          adjustment_index?: string
+          adjustment_month?: number
+          budget_value?: number | null
+          cost_center_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date: string
+          financial_category?: string
+          global_value?: number
+          id?: string
+          number: string
+          object?: string
+          signed?: boolean
+          start_date: string
+          supplier: string
+          updated_at?: string
+        }
+        Update: {
+          adjustment_index?: string
+          adjustment_month?: number
+          budget_value?: number | null
+          cost_center_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string
+          financial_category?: string
+          global_value?: number
+          id?: string
+          number?: string
+          object?: string
+          signed?: boolean
+          start_date?: string
+          supplier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cost_centers: {
         Row: {
           active: boolean
@@ -40,6 +242,59 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      measurements: {
+        Row: {
+          amount: number
+          contract_id: string
+          created_at: string
+          date: string
+          description: string
+          discount: number
+          end_date: string | null
+          id: string
+          observation: string | null
+          other_expenses: number
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          contract_id: string
+          created_at?: string
+          date?: string
+          description?: string
+          discount?: number
+          end_date?: string | null
+          id?: string
+          observation?: string | null
+          other_expenses?: number
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          contract_id?: string
+          created_at?: string
+          date?: string
+          description?: string
+          discount?: number
+          end_date?: string | null
+          id?: string
+          observation?: string | null
+          other_expenses?: number
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measurements_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -109,9 +364,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_contract_cost_center_allocation: {
+        Row: {
+          adjustment_value: number | null
+          base_value: number | null
+          contract_id: string | null
+          contract_number: string | null
+          contract_supplier: string | null
+          contracted_value: number | null
+          cost_center_id: string | null
+          cost_center_name: string | null
+          realized_value: number | null
+          share: number | null
+        }
+        Relationships: []
+      }
+      v_contract_cost_center_sources: {
+        Row: {
+          addendum_description: string | null
+          addendum_id: string | null
+          contract_id: string | null
+          cost_center_id: string | null
+          description: string | null
+          financial_category: string | null
+          origin_type: string | null
+          value: number | null
+        }
+        Relationships: []
+      }
+      v_cost_center_summary: {
+        Row: {
+          balance: number | null
+          contract_count: number | null
+          contracted_value: number | null
+          cost_center_id: string | null
+          cost_center_name: string | null
+          realized_value: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      can_manage_contracts: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
