@@ -83,6 +83,54 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_documents: {
+        Row: {
+          created_at: string
+          doc_number: string
+          doc_type: string
+          file_name: string
+          file_path: string
+          id: string
+          movement_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          doc_number?: string
+          doc_type?: string
+          file_name: string
+          file_path: string
+          id?: string
+          movement_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          doc_number?: string
+          doc_type?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          movement_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_documents_movement_id_fkey"
+            columns: ["movement_id"]
+            isOneToOne: false
+            referencedRelation: "financial_movements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_addendum_items: {
         Row: {
           addendum_id: string
@@ -216,6 +264,157 @@ export type Database = {
             columns: ["cost_center_id"]
             isOneToOne: false
             referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_measurement_approvals: {
+        Row: {
+          approver_id: string
+          comment: string | null
+          created_at: string
+          decision: string
+          id: string
+          measurement_id: string
+          step_order: number
+        }
+        Insert: {
+          approver_id: string
+          comment?: string | null
+          created_at?: string
+          decision: string
+          id?: string
+          measurement_id: string
+          step_order: number
+        }
+        Update: {
+          approver_id?: string
+          comment?: string | null
+          created_at?: string
+          decision?: string
+          id?: string
+          measurement_id?: string
+          step_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_measurement_approvals_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_measurement_approvals_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "contract_measurements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_measurement_cost_centers: {
+        Row: {
+          cost_center_id: string | null
+          created_at: string
+          id: string
+          measurement_id: string
+          value: number
+        }
+        Insert: {
+          cost_center_id?: string | null
+          created_at?: string
+          id?: string
+          measurement_id: string
+          value?: number
+        }
+        Update: {
+          cost_center_id?: string | null
+          created_at?: string
+          id?: string
+          measurement_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_measurement_cost_centers_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_measurement_cost_centers_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "contract_measurements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_measurements: {
+        Row: {
+          contract_id: string
+          created_at: string
+          created_by: string
+          current_step: number
+          id: string
+          notes: string
+          reference_month: string
+          rejection_reason: string | null
+          status: string
+          tier_id: string | null
+          total_value: number
+          updated_at: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          created_by: string
+          current_step?: number
+          id?: string
+          notes?: string
+          reference_month?: string
+          rejection_reason?: string | null
+          status?: string
+          tier_id?: string | null
+          total_value?: number
+          updated_at?: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          created_by?: string
+          current_step?: number
+          id?: string
+          notes?: string
+          reference_month?: string
+          rejection_reason?: string | null
+          status?: string
+          tier_id?: string | null
+          total_value?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_measurements_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_measurements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_measurements_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_approval_tiers"
             referencedColumns: ["id"]
           },
         ]
@@ -532,6 +731,139 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_movements: {
+        Row: {
+          amount: number
+          contract_id: string
+          created_at: string
+          due_date: string | null
+          id: string
+          measurement_id: string
+          notes: string
+          paid_at: string | null
+          paid_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          contract_id: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          measurement_id: string
+          notes?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          contract_id?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          measurement_id?: string
+          notes?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_movements_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_movements_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: true
+            referencedRelation: "contract_measurements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_movements_paid_by_fkey"
+            columns: ["paid_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      measurement_approval_tier_steps: {
+        Row: {
+          approver_id: string
+          created_at: string
+          id: string
+          step_order: number
+          tier_id: string
+        }
+        Insert: {
+          approver_id: string
+          created_at?: string
+          id?: string
+          step_order: number
+          tier_id: string
+        }
+        Update: {
+          approver_id?: string
+          created_at?: string
+          id?: string
+          step_order?: number
+          tier_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measurement_approval_tier_steps_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "measurement_approval_tier_steps_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_approval_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      measurement_approval_tiers: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          max_value: number | null
+          min_value: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          max_value?: number | null
+          min_value?: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          max_value?: number | null
+          min_value?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       measurements: {
         Row: {
           amount: number
@@ -703,9 +1035,22 @@ export type Database = {
         Args: { _approve: boolean; _comment?: string; _request_id: string }
         Returns: undefined
       }
+      fn_decide_measurement: {
+        Args: { _approve: boolean; _comment?: string; _measurement_id: string }
+        Returns: undefined
+      }
       fn_find_approval_tier: { Args: { _value: number }; Returns: string }
+      fn_find_measurement_tier: { Args: { _value: number }; Returns: string }
+      fn_mark_movement_paid: {
+        Args: { _movement_id: string }
+        Returns: undefined
+      }
       fn_submit_contract_request: {
         Args: { _request_id: string }
+        Returns: undefined
+      }
+      fn_submit_measurement: {
+        Args: { _measurement_id: string }
         Returns: undefined
       }
       has_role: {
