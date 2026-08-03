@@ -1,4 +1,9 @@
-import { useEffect, useSyncExternalStore } from "react";
+import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+/* =========================================================
+   Tipos
+   ========================================================= */
 
 export type Measurement = {
   id: string;
@@ -10,6 +15,26 @@ export type Measurement = {
   otherExpenses?: number;
   discount?: number;
   observation?: string;
+};
+
+export type ContractItem = {
+  id: string;
+  description: string;
+  value: number;
+  costCenterId: string | null;
+  costCenter: string;
+  financialCategory: string;
+};
+
+export type AddendumType = "ajuste_valor" | "inclusao_item";
+
+export type Addendum = {
+  id: string;
+  tipo: AddendumType;
+  description: string;
+  value: number;
+  date: string;
+  items: ContractItem[];
 };
 
 export const COST_CENTERS = [
@@ -44,216 +69,332 @@ export type Contract = {
   startDate: string;
   endDate: string;
   adjustmentIndex: "IPCA" | "IGP-M" | "INCC" | "SINAPI" | "Nenhum";
-  adjustmentMonth: number; // 1-12 anniversary month
+  adjustmentMonth: number; // 1-12
   signed: boolean;
+  costCenterId: string | null;
   costCenter: CostCenter;
   financialCategory: FinancialCategory;
   measurements: Measurement[];
+  items: ContractItem[];
+  addendums: Addendum[];
 };
 
-const KEY = "supply-contracts:v3";
+export const CONTRACTS_KEY = ["contracts"] as const;
+export const COST_CENTER_DASHBOARD_KEY = ["cost-center-dashboard"] as const;
 
-function read(): Contract[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as Contract[];
-  } catch {
-    return [];
-  }
-}
+/* =========================================================
+   Leitura
+   ========================================================= */
 
-function write(list: Contract[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(KEY, JSON.stringify(list));
-  listeners.forEach((l) => l());
-}
+const SELECT = `
+  *,
+  cost_centers ( name ),
+  contract_items ( *, cost_centers ( name ) ),
+  measurements ( * ),
+  contract_addendums ( *, contract_addendum_items ( *, cost_centers ( name ) ) )
+`;
 
-function buildSeed(): Contract[] {
-  const today = new Date();
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
-  const addDays = (d: Date, n: number) => {
-    const c = new Date(d);
-    c.setDate(c.getDate() + n);
-    return c;
+type Row = Record<string, any>;
+
+function mapItem(r: Row): ContractItem {
+  return {
+    id: r.id,
+    description: r.description ?? "",
+    value: Number(r.value ?? 0),
+    costCenterId: r.cost_center_id ?? null,
+    costCenter: r.cost_centers?.name ?? "Sem centro de custo",
+    financialCategory: r.financial_category ?? "",
   };
-  const sample: Contract[] = [
-    {
-      id: crypto.randomUUID(),
-      number: "CT-2025-001",
-      supplier: "Cimentos União Ltda.",
-      object: "Fornecimento de cimento CP-II",
-      globalValue: 480000,
-      budgetValue: 450000,
-      startDate: iso(addDays(today, -300)),
-      endDate: iso(addDays(today, 20)),
-      adjustmentIndex: "INCC",
-      adjustmentMonth: ((today.getMonth() + 1) % 12) + 1,
-      signed: true,
-      costCenter: "Obra Residencial Vila Nova",
-      financialCategory: "Estrutura",
-      measurements: [
-        { id: crypto.randomUUID(), date: iso(addDays(today, -60)), description: "Medição #1", amount: 120000 },
-        { id: crypto.randomUUID(), date: iso(addDays(today, -30)), description: "Medição #2", amount: 95000 },
-      ],
-    },
-    {
-      id: crypto.randomUUID(),
-      number: "CT-2025-014",
-      supplier: "Aço Forte Distribuidora",
-      object: "Vergalhões e telas soldadas",
-      globalValue: 1250000,
-      budgetValue: 1200000,
-      startDate: iso(addDays(today, -180)),
-      endDate: iso(addDays(today, 200)),
-      adjustmentIndex: "IPCA",
-      adjustmentMonth: today.getMonth() + 1,
-      signed: true,
-      costCenter: "Obra Comercial Centro",
-      financialCategory: "Estrutura",
-      measurements: [
-        { id: crypto.randomUUID(), date: iso(addDays(today, -45)), description: "Medição #1", amount: 320000 },
-      ],
-    },
-    {
-      id: crypto.randomUUID(),
-      number: "CT-2025-022",
-      supplier: "Madeireira Pinheiro",
-      object: "Madeira para fôrmas",
-      globalValue: 220000,
-      budgetValue: null,
-      startDate: iso(addDays(today, -90)),
-      endDate: iso(addDays(today, 90)),
-      adjustmentIndex: "Nenhum",
-      adjustmentMonth: 1,
-      signed: false,
-      costCenter: "Obra Residencial Vila Nova",
-      financialCategory: "Alvenaria",
-      measurements: [],
-    },
-    {
-      id: crypto.randomUUID(),
-      number: "CT-2025-031",
-      supplier: "Elétrica Power Sul",
-      object: "Material elétrico e quadros",
-      globalValue: 380000,
-      budgetValue: 380000,
-      startDate: iso(addDays(today, -120)),
-      endDate: iso(addDays(today, 150)),
-      adjustmentIndex: "IPCA",
-      adjustmentMonth: 6,
-      signed: true,
-      costCenter: "Obra Comercial Centro",
-      financialCategory: "Instalações Elétricas",
-      measurements: [
-        { id: crypto.randomUUID(), date: iso(addDays(today, -50)), description: "Medição #1", amount: 80000 },
-        { id: crypto.randomUUID(), date: iso(addDays(today, -20)), description: "Medição #2", amount: 60000 },
-      ],
-    },
-    {
-      id: crypto.randomUUID(),
-      number: "CT-2025-040",
-      supplier: "Locadora Máquinas Brasil",
-      object: "Locação de gruas e betoneiras",
-      globalValue: 540000,
-      budgetValue: 500000,
-      startDate: iso(addDays(today, -60)),
-      endDate: iso(addDays(today, 240)),
-      adjustmentIndex: "IGP-M",
-      adjustmentMonth: 9,
-      signed: true,
-      costCenter: "Obra Industrial Norte",
-      financialCategory: "Locação de Equipamentos",
-      measurements: [
-        { id: crypto.randomUUID(), date: iso(addDays(today, -25)), description: "Medição #1", amount: 90000 },
-      ],
-    },
-  ];
-  return sample;
 }
 
-function ensureSeeded() {
-  if (typeof window === "undefined") return;
-  if (window.localStorage.getItem(KEY)) return;
-  window.localStorage.setItem(KEY, JSON.stringify(buildSeed()));
-  listeners.forEach((l) => l());
+function mapContract(r: Row): Contract {
+  return {
+    id: r.id,
+    number: r.number,
+    supplier: r.supplier,
+    object: r.object ?? "",
+    globalValue: Number(r.global_value ?? 0),
+    budgetValue: r.budget_value === null || r.budget_value === undefined ? null : Number(r.budget_value),
+    startDate: r.start_date,
+    endDate: r.end_date,
+    adjustmentIndex: r.adjustment_index,
+    adjustmentMonth: r.adjustment_month,
+    signed: !!r.signed,
+    costCenterId: r.cost_center_id ?? null,
+    costCenter: r.cost_centers?.name ?? "Sem centro de custo",
+    financialCategory: r.financial_category ?? "",
+    measurements: (r.measurements ?? [])
+      .map((m: Row) => ({
+        id: m.id,
+        date: m.date,
+        description: m.description ?? "",
+        amount: Number(m.amount ?? 0),
+        startDate: m.start_date ?? undefined,
+        endDate: m.end_date ?? undefined,
+        otherExpenses: m.other_expenses ? Number(m.other_expenses) : undefined,
+        discount: m.discount ? Number(m.discount) : undefined,
+        observation: m.observation ?? undefined,
+      }))
+      .sort((a: Measurement, b: Measurement) => b.date.localeCompare(a.date)),
+    items: (r.contract_items ?? []).map(mapItem),
+    addendums: (r.contract_addendums ?? [])
+      .map((a: Row): Addendum => ({
+        id: a.id,
+        tipo: a.tipo,
+        description: a.description ?? "",
+        value: Number(a.value ?? 0),
+        date: a.date,
+        items: (a.contract_addendum_items ?? []).map(mapItem),
+      }))
+      .sort((a: Addendum, b: Addendum) => a.date.localeCompare(b.date)),
+  };
 }
 
-const listeners = new Set<() => void>();
-function subscribe(cb: () => void) {
-  listeners.add(cb);
-  return () => listeners.delete(cb);
+export async function fetchContracts(): Promise<Contract[]> {
+  const { data, error } = await supabase
+    .from("contracts")
+    .select(SELECT)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map(mapContract);
 }
 
-export function useContracts(): Contract[] {
-  return useSyncExternalStore(
-    subscribe,
-    () => {
-      const data = read();
-      return data;
-    },
-    () => [],
-  );
+/** Mantém o queryClient acessível para os mutadores imperativos. */
+let qc: QueryClient | null = null;
+export function invalidateContracts() {
+  qc?.invalidateQueries({ queryKey: CONTRACTS_KEY });
+  qc?.invalidateQueries({ queryKey: COST_CENTER_DASHBOARD_KEY });
 }
 
-// cache snapshot to keep referential stability per write
-let cache: Contract[] | null = null;
-let cacheKey = "";
-function snapshot(): Contract[] {
-  const raw = typeof window !== "undefined" ? window.localStorage.getItem(KEY) ?? "" : "";
-  if (raw !== cacheKey) {
-    cacheKey = raw;
-    cache = read();
-  }
-  return cache ?? [];
+export function useContractsQuery() {
+  qc = useQueryClient();
+  return useQuery({ queryKey: CONTRACTS_KEY, queryFn: fetchContracts });
 }
 
 export function useContractsStable(): Contract[] {
-  const data = useSyncExternalStore(subscribe, snapshot, () => []);
-  useEffect(() => {
-    ensureSeeded();
-  }, []);
-  return data;
+  return useContractsQuery().data ?? [];
 }
 
-export function getContract(id: string): Contract | undefined {
-  return read().find((c) => c.id === id);
+/* =========================================================
+   Escrita
+   ========================================================= */
+
+export async function addContract(
+  c: Omit<Contract, "id" | "measurements" | "items" | "addendums" | "costCenter"> & { costCenter?: string },
+): Promise<Contract> {
+  const { data, error } = await supabase
+    .from("contracts")
+    .insert({
+      number: c.number,
+      supplier: c.supplier,
+      object: c.object,
+      global_value: c.globalValue,
+      budget_value: c.budgetValue,
+      start_date: c.startDate,
+      end_date: c.endDate,
+      adjustment_index: c.adjustmentIndex,
+      adjustment_month: c.adjustmentMonth,
+      signed: c.signed,
+      cost_center_id: c.costCenterId,
+      financial_category: c.financialCategory,
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+
+  // Item inicial do contrato: todo o valor global no centro de custo principal.
+  const { error: itemError } = await supabase.from("contract_items").insert({
+    contract_id: data.id,
+    description: c.object || "Objeto do contrato",
+    value: c.globalValue,
+    cost_center_id: c.costCenterId,
+    financial_category: c.financialCategory,
+  });
+  if (itemError) throw itemError;
+
+  invalidateContracts();
+  return { ...(c as any), id: data.id, measurements: [], items: [], addendums: [] } as Contract;
 }
 
-export function addContract(c: Omit<Contract, "id" | "measurements">): Contract {
-  const list = read();
-  const next: Contract = { ...c, id: crypto.randomUUID(), measurements: [] };
-  write([next, ...list]);
-  return next;
+export async function updateContract(id: string, patch: Partial<Contract>) {
+  const row: Row = {};
+  if (patch.number !== undefined) row.number = patch.number;
+  if (patch.supplier !== undefined) row.supplier = patch.supplier;
+  if (patch.object !== undefined) row.object = patch.object;
+  if (patch.globalValue !== undefined) row.global_value = patch.globalValue;
+  if (patch.budgetValue !== undefined) row.budget_value = patch.budgetValue;
+  if (patch.startDate !== undefined) row.start_date = patch.startDate;
+  if (patch.endDate !== undefined) row.end_date = patch.endDate;
+  if (patch.adjustmentIndex !== undefined) row.adjustment_index = patch.adjustmentIndex;
+  if (patch.adjustmentMonth !== undefined) row.adjustment_month = patch.adjustmentMonth;
+  if (patch.signed !== undefined) row.signed = patch.signed;
+  if (patch.costCenterId !== undefined) row.cost_center_id = patch.costCenterId;
+  if (patch.financialCategory !== undefined) row.financial_category = patch.financialCategory;
+  const { error } = await supabase.from("contracts").update(row as never).eq("id", id);
+  if (error) throw error;
+  invalidateContracts();
 }
 
-export function updateContract(id: string, patch: Partial<Contract>) {
-  const list = read().map((c) => (c.id === id ? { ...c, ...patch } : c));
-  write(list);
+export async function deleteContract(id: string) {
+  const { error } = await supabase.from("contracts").delete().eq("id", id);
+  if (error) throw error;
+  invalidateContracts();
 }
 
-export function addMeasurement(contractId: string, m: Omit<Measurement, "id">) {
-  const list = read().map((c) =>
-    c.id === contractId
-      ? { ...c, measurements: [...c.measurements, { ...m, id: crypto.randomUUID() }] }
-      : c,
-  );
-  write(list);
+export async function addMeasurement(contractId: string, m: Omit<Measurement, "id">) {
+  const { error } = await supabase.from("measurements").insert({
+    contract_id: contractId,
+    date: m.date,
+    description: m.description,
+    amount: m.amount,
+    start_date: m.startDate ?? null,
+    end_date: m.endDate ?? null,
+    other_expenses: m.otherExpenses ?? 0,
+    discount: m.discount ?? 0,
+    observation: m.observation ?? null,
+  });
+  if (error) throw error;
+  invalidateContracts();
 }
 
-export function deleteMeasurement(contractId: string, mid: string) {
-  const list = read().map((c) =>
-    c.id === contractId ? { ...c, measurements: c.measurements.filter((m) => m.id !== mid) } : c,
-  );
-  write(list);
+export async function deleteMeasurement(_contractId: string, mid: string) {
+  const { error } = await supabase.from("measurements").delete().eq("id", mid);
+  if (error) throw error;
+  invalidateContracts();
 }
 
-export function deleteContract(id: string) {
-  write(read().filter((c) => c.id !== id));
+/* ---------- Aditivos ---------- */
+
+export async function addAddendum(input: {
+  contractId: string;
+  tipo: AddendumType;
+  description: string;
+  value: number;
+  date: string;
+  item?: { description: string; value: number; costCenterId: string | null; financialCategory: string };
+}) {
+  const { data, error } = await supabase
+    .from("contract_addendums")
+    .insert({
+      contract_id: input.contractId,
+      tipo: input.tipo,
+      description: input.description,
+      value: input.value,
+      date: input.date,
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+
+  if (input.tipo === "inclusao_item" && input.item) {
+    const { error: e2 } = await supabase.from("contract_addendum_items").insert({
+      addendum_id: data.id,
+      description: input.item.description,
+      value: input.item.value,
+      cost_center_id: input.item.costCenterId,
+      financial_category: input.item.financialCategory,
+    });
+    if (e2) throw e2;
+  }
+  invalidateContracts();
 }
 
-// Helpers
+export async function deleteAddendum(id: string) {
+  const { error } = await supabase.from("contract_addendums").delete().eq("id", id);
+  if (error) throw error;
+  invalidateContracts();
+}
+
+/* =========================================================
+   Dashboard por centro de custo (views do banco)
+   ========================================================= */
+
+export type CostCenterSummary = {
+  costCenterId: string | null;
+  costCenterName: string;
+  contractCount: number;
+  contractedValue: number;
+  realizedValue: number;
+  balance: number;
+};
+
+export type CostCenterAllocation = {
+  contractId: string;
+  contractNumber: string;
+  contractSupplier: string;
+  costCenterId: string | null;
+  costCenterName: string;
+  baseValue: number;
+  adjustmentValue: number;
+  contractedValue: number;
+  realizedValue: number;
+};
+
+export type CostCenterSource = {
+  contractId: string;
+  costCenterId: string | null;
+  originType: "contrato" | "aditivo";
+  addendumId: string | null;
+  addendumDescription: string | null;
+  description: string;
+  financialCategory: string;
+  value: number;
+};
+
+export function useCostCenterDashboard() {
+  return useQuery({
+    queryKey: COST_CENTER_DASHBOARD_KEY,
+    queryFn: async () => {
+      const [summary, allocation, sources] = await Promise.all([
+        supabase.from("v_cost_center_summary").select("*"),
+        supabase.from("v_contract_cost_center_allocation").select("*"),
+        supabase.from("v_contract_cost_center_sources").select("*"),
+      ]);
+      if (summary.error) throw summary.error;
+      if (allocation.error) throw allocation.error;
+      if (sources.error) throw sources.error;
+
+      return {
+        summary: (summary.data ?? [])
+          .map((r: Row): CostCenterSummary => ({
+            costCenterId: r.cost_center_id,
+            costCenterName: r.cost_center_name ?? "Sem centro de custo",
+            contractCount: Number(r.contract_count ?? 0),
+            contractedValue: Number(r.contracted_value ?? 0),
+            realizedValue: Number(r.realized_value ?? 0),
+            balance: Number(r.balance ?? 0),
+          }))
+          .sort((a, b) => b.contractedValue - a.contractedValue),
+        allocation: (allocation.data ?? []).map((r: Row): CostCenterAllocation => ({
+          contractId: r.contract_id,
+          contractNumber: r.contract_number,
+          contractSupplier: r.contract_supplier,
+          costCenterId: r.cost_center_id,
+          costCenterName: r.cost_center_name ?? "Sem centro de custo",
+          baseValue: Number(r.base_value ?? 0),
+          adjustmentValue: Number(r.adjustment_value ?? 0),
+          contractedValue: Number(r.contracted_value ?? 0),
+          realizedValue: Number(r.realized_value ?? 0),
+        })),
+        sources: (sources.data ?? []).map((r: Row): CostCenterSource => ({
+          contractId: r.contract_id,
+          costCenterId: r.cost_center_id,
+          originType: r.origin_type,
+          addendumId: r.addendum_id,
+          addendumDescription: r.addendum_description,
+          description: r.description ?? "",
+          financialCategory: r.financial_category ?? "",
+          value: Number(r.value ?? 0),
+        })),
+      };
+    },
+  });
+}
+
+/* =========================================================
+   Helpers
+   ========================================================= */
+
 export const formatBRL = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -267,15 +408,25 @@ export function measurementTotal(m: Measurement): number {
   return m.amount + (m.otherExpenses || 0) - (m.discount || 0);
 }
 
+export function addendumsTotal(c: Contract): number {
+  return c.addendums.reduce((s, a) => s + (a.tipo === "ajuste_valor" ? a.value : a.items.reduce((x, i) => x + i.value, 0)), 0);
+}
+
+/** Valor vigente do contrato = valor global + aditivos. */
+export function contractCurrentValue(c: Contract): number {
+  return c.globalValue + addendumsTotal(c);
+}
+
 export function contractBalance(c: Contract) {
   const paid = c.measurements.reduce((s, m) => s + measurementTotal(m), 0);
-  return { paid, balance: c.globalValue - paid, pct: c.globalValue ? paid / c.globalValue : 0 };
+  const total = contractCurrentValue(c);
+  return { paid, balance: total - paid, pct: total ? paid / total : 0, total };
 }
 
 export function daysUntil(iso: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const target = new Date(iso);
+  const target = new Date(`${iso}T00:00:00`);
   target.setHours(0, 0, 0, 0);
   return Math.round((target.getTime() - today.getTime()) / 86_400_000);
 }

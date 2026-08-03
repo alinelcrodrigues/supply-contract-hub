@@ -21,7 +21,7 @@ import {
   formatDate,
   measurementTotal,
   updateContract,
-  useContractsStable,
+  useContractsQuery,
 } from "@/lib/contracts-store";
 
 export const Route = createFileRoute("/_authenticated/contracts/$id")({
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/contracts/$id")({
 function ContractDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const contracts = useContractsStable();
+  const { data: contracts = [], isLoading } = useContractsQuery();
   const contract = contracts.find((c) => c.id === id);
 
   const todayIso = new Date().toISOString().slice(0, 10);
@@ -51,6 +51,10 @@ function ContractDetail() {
     discount: "",
     observation: "",
   });
+
+  if (isLoading) {
+    return <p className="text-sm text-muted-foreground">Carregando contrato...</p>;
+  }
 
   if (!contract) {
     return (
@@ -78,7 +82,7 @@ function ContractDetail() {
       toast.error("Valor total excede o saldo do contrato.");
       return;
     }
-    addMeasurement(contract.id, {
+    void addMeasurement(contract.id, {
       date: m.date,
       description: m.description || "Medição",
       amount,
@@ -113,8 +117,7 @@ function ContractDetail() {
           className="text-destructive hover:bg-destructive/10"
           onClick={() => {
             if (confirm("Excluir este contrato?")) {
-              deleteContract(contract.id);
-              navigate({ to: "/contracts" });
+              void deleteContract(contract.id).then(() => navigate({ to: "/contracts" }));
             }
           }}
         >
@@ -158,7 +161,7 @@ function ContractDetail() {
               <Switch
                 checked={contract.signed}
                 onCheckedChange={(v) => {
-                  updateContract(contract.id, { signed: v });
+                  void updateContract(contract.id, { signed: v });
                   toast.success(v ? "Marcado como assinado." : "Marcado como pendente.");
                 }}
               />
@@ -166,7 +169,7 @@ function ContractDetail() {
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-5">
-            <Info label="Valor global" value={formatBRL(contract.globalValue)} />
+            <Info label="Valor vigente" value={formatBRL(bal.total)} sub={`Global ${formatBRL(contract.globalValue)}`} />
             <Info label="Executado" value={formatBRL(bal.paid)} />
             <Info label="Saldo" value={formatBRL(bal.balance)} highlight />
             <Info label="Orçamento" value={contract.budgetValue !== null ? formatBRL(contract.budgetValue) : "Não se aplica"} />
@@ -214,7 +217,7 @@ function ContractDetail() {
         </CardContent>
       </Card>
 
-      <AditivosContratuais contractId={contract.id} valorOriginal={contract.globalValue} />
+      <AditivosContratuais contractId={contract.id} valorOriginal={contract.globalValue} aditivos={contract.addendums} />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <Card>
@@ -306,7 +309,7 @@ function ContractDetail() {
                         <td className="px-3 py-2 text-right">
                           <button
                             onClick={() => {
-                              if (confirm("Remover esta medição?")) deleteMeasurement(contract.id, mm.id);
+                              if (confirm("Remover esta medição?")) void deleteMeasurement(contract.id, mm.id);
                             }}
                             className="text-muted-foreground hover:text-destructive"
                           >
