@@ -1,0 +1,176 @@
+import { useState } from "react";
+import { Check, X, Send, Paperclip } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { formatBRL, formatDate } from "@/lib/contracts-store";
+import { useUsers, useCostCenters } from "@/lib/params-hooks";
+import {
+  useContractRequests, useContractRequestMutations, useTiers, useCurrentUserId, downloadFile,
+  type ContractRequest,
+} from "@/lib/approvals-hooks";
+
+const statusLabel: Record<string, string> = {
+  rascunho: "Rascunho",
+  em_aprovacao: "Em aprovação",
+  aprovada: "Aprovada",
+  reprovada: "Reprovada",
+};
+
+export default function PainelAprovacaoContrato() {
+  const { data: requests, isLoading } = useContractRequests();
+  const { data: tiers } = useTiers("contract");
+  const { data: users } = useUsers();
+  const { data: costCenters } = useCostCenters();
+  const { data: uid } = useCurrentUserId();
+  const { decide, submit } = useContractRequestMutations();
+  const [comments, setComments] = useState<Record<string, string>>({});
+
+  const userName = (id: string) => users?.find((u) => u.id === id)?.name ?? "—";
+  const ccName = (id: string | null) => costCenters?.find((c) => c.id === id)?.name ?? "Sem centro de custo";
+
+  const currentApprover = (r: ContractRequest) =>
+    tiers?.find((t) => t.id === r.tier_id)?.steps.find((s) => s.step_order === r.current_step)?.approver_id ?? null;
+
+  const act = async (r: ContractRequest, approve: boolean) => {
+    try {
+      await decide.mutateAsync({ id: r.id, approve, comment: comments[r.id] });
+      toast.success(approve ? "Solicitação aprovada." : "Solicitação reprovada e devolvida ao solicitante.");
+      setComments((c) => ({ ...c, [r.id]: "" }));
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+
+  const resend = async (r: ContractRequest) => {
+    try {
+      await submit.mutateAsync(r.id);
+      toast.success("Solicitação reenviada — aprovação recomeça do primeiro aprovador.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+
+  if (isLoading) return <p className="text-sm text-muted-foreground">Carregando solicitações…</p>;
+  if (!requests?.length) return <p className="text-sm text-muted-foreground">Nenhuma solicitação cadastrada.</p>;
+
+  const pending = requests.filter((r) => r.status === "em_aprovacao" && currentApprover(r) === uid);
+  const others = requests.filter((r) => !pending.includes(r));
+
+  const renderCard = (r: ContractRequest, myTurn: boolean) => {
+    const tier = tiers?.find((t) => t.id === r.tier_id);
+    return (
+      <Card key={r.id} className={myTurn ? "border-secondary" : ""}>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div>
+            <CardTitle className="text-base">{r.object || "Sem objeto"}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {r.supplier_name} · {formatBRL(Number(r.total_value))} · {formatDate(r.created_at.slice(0, 10))}
+            </p>
+          </div>
+          <Badge variant={r.status === "aprovada" ? "default" : r.status === "reprovada" ? "destructive" : "secondary"}>
+            {statusLabel[r.status] ?? r.status}
+          </Badge>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <p><span className="text-muted-foreground">Solicitante:</span> {userName(r.requester_id)}</p>
+            <p><span className="text-muted-foreground">Categoria:</span> {r.financial_category || "—"}</p>
+            <p><span className="text-muted-foreground">Prazo:</span> {r.deadline_days} dias</p>
+            <p><span className="text-muted-foreground">Faixa de alçada:</span> {tier?.name ?? "—"}</p>
+          </div>
+
+          {r.contract_request_cost_centers.length > 0 && (
+            <div>
+              <p className="mb-1 font-medium">Rateio</p>
+              <ul className="space-y-1 text-muted-foreground">
+                {r.contract_request_cost_centers.map((c) => (
+                  <li key={c.id}>{ccName(c.cost_center_id)} — {formatBRL(Number(c.value))}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {tier && r.status === "em_aprovacao" && (
+            <div className="flex flex-wrap gap-2">
+              {tier.steps.map((s) => (
+                <Badge key={s.id} variant={s.step_order < r.current_step ? "default" : s.step_order === r.current_step ? "secondary" : "outline"}>
+                  {s.step_order}. {userName(s.approver_id)}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {r.contract_request_documents.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {r.contract_request_documents.map((d) => (
+                <Button key={d.id} size="sm" variant="outline"
+                  onClick={() => downloadFile("contract-request-documents", d.file_path).catch((e) => toast.error(e.message))}>
+                  <Paperclip className="mr-1 h-3 w-3" /> {d.file_name}
+                </Button>
+              ))}
+            </div>
+          )}
+
+          {r.contract_request_approvals.length > 0 && (
+            <div>
+              <p className="mb-1 font-medium">Histórico</p>
+              <ul className="space-y-1 text-muted-foreground">
+                {[...r.contract_request_approvals].sort((a, b) => a.step_order - b.step_order).map((a) => (
+                  <li key={a.id}>
+                    {a.step_order}. {userName(a.approver_id)} — {a.decision}
+                    {a.comment ? ` · ${a.comment}` : ""}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {r.status === "reprovada" && r.rejection_reason && (
+            <p className="rounded-md bg-destructive/10 p-2 text-destructive">Motivo: {r.rejection_reason}</p>
+          )}
+
+          {myTurn && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                placeholder="Comentário (opcional)"
+                className="max-w-sm"
+                value={comments[r.id] ?? ""}
+                onChange={(e) => setComments((c) => ({ ...c, [r.id]: e.target.value }))}
+              />
+              <Button size="sm" onClick={() => act(r, true)} disabled={decide.isPending}>
+                <Check className="mr-1 h-4 w-4" /> Aprovar
+              </Button>
+              <Button size="sm" variant="destructive" onClick={() => act(r, false)} disabled={decide.isPending}>
+                <X className="mr-1 h-4 w-4" /> Reprovar
+              </Button>
+            </div>
+          )}
+
+          {(r.status === "rascunho" || r.status === "reprovada") && r.requester_id === uid && (
+            <Button size="sm" variant="outline" onClick={() => resend(r)} disabled={submit.isPending}>
+              <Send className="mr-1 h-4 w-4" /> {r.status === "reprovada" ? "Corrigir e reenviar" : "Enviar para aprovação"}
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="space-y-8">
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">Aguardando sua aprovação ({pending.length})</h2>
+        {pending.length === 0
+          ? <p className="text-sm text-muted-foreground">Nada pendente para você.</p>
+          : pending.map((r) => renderCard(r, true))}
+      </section>
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">Demais solicitações</h2>
+        {others.map((r) => renderCard(r, false))}
+      </section>
+    </div>
+  );
+}

@@ -8,7 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { LayoutDashboard, FilePlus2, FileText, LogOut, Settings } from "lucide-react";
+import { LayoutDashboard, FileText, LogOut, Settings, ClipboardList, Ruler, Wallet, SlidersHorizontal } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -172,12 +172,17 @@ function AppHeader() {
                 <div className="text-base font-semibold">Gestão de Contratos</div>
               </div>
             </Link>
-            <nav className="flex items-center gap-1">
+            <nav className="flex flex-wrap items-center gap-1">
               <NavLink to="/" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
               <NavLink to="/contracts" icon={<FileText className="h-4 w-4" />} label="Contratos" />
-              <NavLink to="/contracts/new" icon={<FilePlus2 className="h-4 w-4" />} label="Novo contrato" />
+              <NavLink to="/solicitacoes" icon={<ClipboardList className="h-4 w-4" />} label="Solicitações" />
+              <NavLink to="/medicoes" icon={<Ruler className="h-4 w-4" />} label="Medições" />
+              <NavLink to="/financeiro" icon={<Wallet className="h-4 w-4" />} label="Financeiro" />
               {role === "admin" && (
-                <NavLink to="/settings" icon={<Settings className="h-4 w-4" />} label="Parametrização" />
+                <>
+                  <NavLink to="/alcadas" icon={<SlidersHorizontal className="h-4 w-4" />} label="Alçadas" />
+                  <NavLink to="/settings" icon={<Settings className="h-4 w-4" />} label="Parametrização" />
+                </>
               )}
               <Button
                 variant="ghost"
