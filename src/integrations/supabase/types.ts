@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      approval_tier_steps: {
+        Row: {
+          approver_id: string
+          created_at: string
+          id: string
+          step_order: number
+          tier_id: string
+        }
+        Insert: {
+          approver_id: string
+          created_at?: string
+          id?: string
+          step_order: number
+          tier_id: string
+        }
+        Update: {
+          approver_id?: string
+          created_at?: string
+          id?: string
+          step_order?: number
+          tier_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_tier_steps_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approval_tier_steps_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "approval_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      approval_tiers: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          max_value: number | null
+          min_value: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          max_value?: number | null
+          min_value?: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          max_value?: number | null
+          min_value?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contract_addendum_items: {
         Row: {
           addendum_id: string
@@ -147,6 +216,226 @@ export type Database = {
             columns: ["cost_center_id"]
             isOneToOne: false
             referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_request_approvals: {
+        Row: {
+          approver_id: string
+          comment: string | null
+          created_at: string
+          decision: string
+          id: string
+          request_id: string
+          step_order: number
+        }
+        Insert: {
+          approver_id: string
+          comment?: string | null
+          created_at?: string
+          decision: string
+          id?: string
+          request_id: string
+          step_order: number
+        }
+        Update: {
+          approver_id?: string
+          comment?: string | null
+          created_at?: string
+          decision?: string
+          id?: string
+          request_id?: string
+          step_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_request_approvals_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_request_approvals_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "contract_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_request_cost_centers: {
+        Row: {
+          cost_center_id: string | null
+          created_at: string
+          id: string
+          request_id: string
+          value: number
+        }
+        Insert: {
+          cost_center_id?: string | null
+          created_at?: string
+          id?: string
+          request_id: string
+          value?: number
+        }
+        Update: {
+          cost_center_id?: string | null
+          created_at?: string
+          id?: string
+          request_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_request_cost_centers_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_request_cost_centers_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "contract_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_request_documents: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          id: string
+          request_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          id?: string
+          request_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          request_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_request_documents_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "contract_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_request_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_requests: {
+        Row: {
+          contract_id: string | null
+          created_at: string
+          current_step: number
+          deadline_days: number
+          financial_category: string
+          id: string
+          object: string
+          obligations_contracted: string
+          obligations_contractor: string
+          payment_terms: string
+          rejection_reason: string | null
+          requester_id: string
+          specification: string
+          status: string
+          supplier_address: string
+          supplier_cnpj: string
+          supplier_name: string
+          supplier_representative: string
+          tier_id: string | null
+          total_value: number
+          updated_at: string
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string
+          current_step?: number
+          deadline_days?: number
+          financial_category?: string
+          id?: string
+          object?: string
+          obligations_contracted?: string
+          obligations_contractor?: string
+          payment_terms?: string
+          rejection_reason?: string | null
+          requester_id: string
+          specification?: string
+          status?: string
+          supplier_address?: string
+          supplier_cnpj?: string
+          supplier_name?: string
+          supplier_representative?: string
+          tier_id?: string | null
+          total_value?: number
+          updated_at?: string
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string
+          current_step?: number
+          deadline_days?: number
+          financial_category?: string
+          id?: string
+          object?: string
+          obligations_contracted?: string
+          obligations_contractor?: string
+          payment_terms?: string
+          rejection_reason?: string | null
+          requester_id?: string
+          specification?: string
+          status?: string
+          supplier_address?: string
+          supplier_cnpj?: string
+          supplier_name?: string
+          supplier_representative?: string
+          tier_id?: string | null
+          total_value?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_requests_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_requests_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "approval_tiers"
             referencedColumns: ["id"]
           },
         ]
@@ -406,6 +695,19 @@ export type Database = {
     }
     Functions: {
       can_manage_contracts: { Args: { _user_id: string }; Returns: boolean }
+      fn_convert_request_to_contract: {
+        Args: { _request_id: string }
+        Returns: string
+      }
+      fn_decide_contract_request: {
+        Args: { _approve: boolean; _comment?: string; _request_id: string }
+        Returns: undefined
+      }
+      fn_find_approval_tier: { Args: { _value: number }; Returns: string }
+      fn_submit_contract_request: {
+        Args: { _request_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
