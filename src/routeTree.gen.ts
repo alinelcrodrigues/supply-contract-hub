@@ -13,7 +13,13 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedAlcadasRouteImport } from './routes/_authenticated/alcadas'
+import { Route as AuthenticatedSolicitacoesIndexRouteImport } from './routes/_authenticated/solicitacoes.index'
+import { Route as AuthenticatedMedicoesIndexRouteImport } from './routes/_authenticated/medicoes.index'
 import { Route as AuthenticatedContractsIndexRouteImport } from './routes/_authenticated/contracts.index'
+import { Route as AuthenticatedSolicitacoesNewRouteImport } from './routes/_authenticated/solicitacoes.new'
+import { Route as AuthenticatedMedicoesNewRouteImport } from './routes/_authenticated/medicoes.new'
 import { Route as AuthenticatedContractsNewRouteImport } from './routes/_authenticated/contracts.new'
 import { Route as AuthenticatedContractsIdRouteImport } from './routes/_authenticated/contracts.$id'
 
@@ -36,10 +42,44 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAlcadasRoute = AuthenticatedAlcadasRouteImport.update({
+  id: '/alcadas',
+  path: '/alcadas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSolicitacoesIndexRoute =
+  AuthenticatedSolicitacoesIndexRouteImport.update({
+    id: '/solicitacoes/',
+    path: '/solicitacoes/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMedicoesIndexRoute =
+  AuthenticatedMedicoesIndexRouteImport.update({
+    id: '/medicoes/',
+    path: '/medicoes/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedContractsIndexRoute =
   AuthenticatedContractsIndexRouteImport.update({
     id: '/contracts/',
     path: '/contracts/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSolicitacoesNewRoute =
+  AuthenticatedSolicitacoesNewRouteImport.update({
+    id: '/solicitacoes/new',
+    path: '/solicitacoes/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMedicoesNewRoute =
+  AuthenticatedMedicoesNewRouteImport.update({
+    id: '/medicoes/new',
+    path: '/medicoes/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedContractsNewRoute =
@@ -58,55 +98,91 @@ const AuthenticatedContractsIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
+  '/alcadas': typeof AuthenticatedAlcadasRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/contracts/$id': typeof AuthenticatedContractsIdRoute
   '/contracts/new': typeof AuthenticatedContractsNewRoute
+  '/medicoes/new': typeof AuthenticatedMedicoesNewRoute
+  '/solicitacoes/new': typeof AuthenticatedSolicitacoesNewRoute
   '/contracts/': typeof AuthenticatedContractsIndexRoute
+  '/medicoes/': typeof AuthenticatedMedicoesIndexRoute
+  '/solicitacoes/': typeof AuthenticatedSolicitacoesIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/alcadas': typeof AuthenticatedAlcadasRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/': typeof AuthenticatedIndexRoute
   '/contracts/$id': typeof AuthenticatedContractsIdRoute
   '/contracts/new': typeof AuthenticatedContractsNewRoute
+  '/medicoes/new': typeof AuthenticatedMedicoesNewRoute
+  '/solicitacoes/new': typeof AuthenticatedSolicitacoesNewRoute
   '/contracts': typeof AuthenticatedContractsIndexRoute
+  '/medicoes': typeof AuthenticatedMedicoesIndexRoute
+  '/solicitacoes': typeof AuthenticatedSolicitacoesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/alcadas': typeof AuthenticatedAlcadasRoute
+  '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/contracts/$id': typeof AuthenticatedContractsIdRoute
   '/_authenticated/contracts/new': typeof AuthenticatedContractsNewRoute
+  '/_authenticated/medicoes/new': typeof AuthenticatedMedicoesNewRoute
+  '/_authenticated/solicitacoes/new': typeof AuthenticatedSolicitacoesNewRoute
   '/_authenticated/contracts/': typeof AuthenticatedContractsIndexRoute
+  '/_authenticated/medicoes/': typeof AuthenticatedMedicoesIndexRoute
+  '/_authenticated/solicitacoes/': typeof AuthenticatedSolicitacoesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/alcadas'
+    | '/financeiro'
     | '/settings'
     | '/contracts/$id'
     | '/contracts/new'
+    | '/medicoes/new'
+    | '/solicitacoes/new'
     | '/contracts/'
+    | '/medicoes/'
+    | '/solicitacoes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/alcadas'
+    | '/financeiro'
     | '/settings'
     | '/'
     | '/contracts/$id'
     | '/contracts/new'
+    | '/medicoes/new'
+    | '/solicitacoes/new'
     | '/contracts'
+    | '/medicoes'
+    | '/solicitacoes'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/alcadas'
+    | '/_authenticated/financeiro'
     | '/_authenticated/settings'
     | '/_authenticated/'
     | '/_authenticated/contracts/$id'
     | '/_authenticated/contracts/new'
+    | '/_authenticated/medicoes/new'
+    | '/_authenticated/solicitacoes/new'
     | '/_authenticated/contracts/'
+    | '/_authenticated/medicoes/'
+    | '/_authenticated/solicitacoes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,11 +220,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/financeiro': {
+      id: '/_authenticated/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/alcadas': {
+      id: '/_authenticated/alcadas'
+      path: '/alcadas'
+      fullPath: '/alcadas'
+      preLoaderRoute: typeof AuthenticatedAlcadasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/solicitacoes/': {
+      id: '/_authenticated/solicitacoes/'
+      path: '/solicitacoes'
+      fullPath: '/solicitacoes/'
+      preLoaderRoute: typeof AuthenticatedSolicitacoesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/medicoes/': {
+      id: '/_authenticated/medicoes/'
+      path: '/medicoes'
+      fullPath: '/medicoes/'
+      preLoaderRoute: typeof AuthenticatedMedicoesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/contracts/': {
       id: '/_authenticated/contracts/'
       path: '/contracts'
       fullPath: '/contracts/'
       preLoaderRoute: typeof AuthenticatedContractsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/solicitacoes/new': {
+      id: '/_authenticated/solicitacoes/new'
+      path: '/solicitacoes/new'
+      fullPath: '/solicitacoes/new'
+      preLoaderRoute: typeof AuthenticatedSolicitacoesNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/medicoes/new': {
+      id: '/_authenticated/medicoes/new'
+      path: '/medicoes/new'
+      fullPath: '/medicoes/new'
+      preLoaderRoute: typeof AuthenticatedMedicoesNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/contracts/new': {
@@ -169,19 +287,31 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAlcadasRoute: typeof AuthenticatedAlcadasRoute
+  AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedContractsIdRoute: typeof AuthenticatedContractsIdRoute
   AuthenticatedContractsNewRoute: typeof AuthenticatedContractsNewRoute
+  AuthenticatedMedicoesNewRoute: typeof AuthenticatedMedicoesNewRoute
+  AuthenticatedSolicitacoesNewRoute: typeof AuthenticatedSolicitacoesNewRoute
   AuthenticatedContractsIndexRoute: typeof AuthenticatedContractsIndexRoute
+  AuthenticatedMedicoesIndexRoute: typeof AuthenticatedMedicoesIndexRoute
+  AuthenticatedSolicitacoesIndexRoute: typeof AuthenticatedSolicitacoesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAlcadasRoute: AuthenticatedAlcadasRoute,
+  AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedContractsIdRoute: AuthenticatedContractsIdRoute,
   AuthenticatedContractsNewRoute: AuthenticatedContractsNewRoute,
+  AuthenticatedMedicoesNewRoute: AuthenticatedMedicoesNewRoute,
+  AuthenticatedSolicitacoesNewRoute: AuthenticatedSolicitacoesNewRoute,
   AuthenticatedContractsIndexRoute: AuthenticatedContractsIndexRoute,
+  AuthenticatedMedicoesIndexRoute: AuthenticatedMedicoesIndexRoute,
+  AuthenticatedSolicitacoesIndexRoute: AuthenticatedSolicitacoesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
