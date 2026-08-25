@@ -31,6 +31,7 @@ function NewContract() {
   const navigate = useNavigate();
   const { data: activeCC = [] } = useActiveCostCenters();
   const costCenterOptions = activeCC;
+  const [files, setFiles] = useState<File[]>([]);
   const [form, setForm] = useState({
     number: "",
     supplier: "",
