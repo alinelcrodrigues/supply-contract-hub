@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { AditivosContratuais } from "@/components/AditivosContratuais";
+import EditarContratoDialog from "@/components/EditarContratoDialog";
 import {
   addMeasurement,
   contractBalance,
@@ -21,8 +22,10 @@ import {
   formatDate,
   measurementTotal,
   updateContract,
+  updateMeasurement,
   useContractsQuery,
 } from "@/lib/contracts-store";
+
 
 export const Route = createFileRoute("/_authenticated/contracts/$id")({
   head: () => ({
