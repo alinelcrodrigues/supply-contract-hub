@@ -178,6 +178,8 @@ function AppHeader() {
               <NavLink to="/solicitacoes" icon={<ClipboardList className="h-4 w-4" />} label="Solicitações" />
               <NavLink to="/medicoes" icon={<Ruler className="h-4 w-4" />} label="Medições" />
               <NavLink to="/financeiro" icon={<Wallet className="h-4 w-4" />} label="Financeiro" />
+              <NavLink to="/cadastros" icon={<Boxes className="h-4 w-4" />} label="Cadastros" />
+
               {role === "admin" && (
                 <>
                   <NavLink to="/alcadas" icon={<SlidersHorizontal className="h-4 w-4" />} label="Alçadas" />
