@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { addContract, type Contract } from "@/lib/contracts-store";
 import { useActiveCostCenters } from "@/lib/params-hooks";
 import { FinancialCategorySelect } from "@/components/FinancialCategorySelect";
+import { uploadContractDocuments } from "@/components/ContratoDocumentos";
 
 export const Route = createFileRoute("/_authenticated/contracts/new")({
   head: () => ({
