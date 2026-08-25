@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedCadastrosRouteImport } from './routes/_authenticated/cadastros'
 import { Route as AuthenticatedAlcadasRouteImport } from './routes/_authenticated/alcadas'
 import { Route as AuthenticatedSolicitacoesIndexRouteImport } from './routes/_authenticated/solicitacoes.index'
 import { Route as AuthenticatedMedicoesIndexRouteImport } from './routes/_authenticated/medicoes.index'
@@ -45,6 +46,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   id: '/financeiro',
   path: '/financeiro',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCadastrosRoute = AuthenticatedCadastrosRouteImport.update({
+  id: '/cadastros',
+  path: '/cadastros',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAlcadasRoute = AuthenticatedAlcadasRouteImport.update({
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/alcadas': typeof AuthenticatedAlcadasRoute
+  '/cadastros': typeof AuthenticatedCadastrosRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/contracts/$id': typeof AuthenticatedContractsIdRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/alcadas': typeof AuthenticatedAlcadasRoute
+  '/cadastros': typeof AuthenticatedCadastrosRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/': typeof AuthenticatedIndexRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/alcadas': typeof AuthenticatedAlcadasRoute
+  '/_authenticated/cadastros': typeof AuthenticatedCadastrosRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/alcadas'
+    | '/cadastros'
     | '/financeiro'
     | '/settings'
     | '/contracts/$id'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/alcadas'
+    | '/cadastros'
     | '/financeiro'
     | '/settings'
     | '/'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/alcadas'
+    | '/_authenticated/cadastros'
     | '/_authenticated/financeiro'
     | '/_authenticated/settings'
     | '/_authenticated/'
@@ -225,6 +237,13 @@ declare module '@tanstack/react-router' {
       path: '/financeiro'
       fullPath: '/financeiro'
       preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cadastros': {
+      id: '/_authenticated/cadastros'
+      path: '/cadastros'
+      fullPath: '/cadastros'
+      preLoaderRoute: typeof AuthenticatedCadastrosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/alcadas': {
@@ -288,6 +307,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAlcadasRoute: typeof AuthenticatedAlcadasRoute
+  AuthenticatedCadastrosRoute: typeof AuthenticatedCadastrosRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
@@ -302,6 +322,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAlcadasRoute: AuthenticatedAlcadasRoute,
+  AuthenticatedCadastrosRoute: AuthenticatedCadastrosRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
