@@ -250,7 +250,7 @@ function ContractDetail() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <Card>
-          <CardHeader><CardTitle className="text-base">Lançar medição / pagamento</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{editingMeasurementId ? "Editar medição" : "Lançar medição / pagamento"}</CardTitle></CardHeader>
           <CardContent>
             <form onSubmit={submitMeasurement} className="grid gap-4">
               <div className="space-y-2">
