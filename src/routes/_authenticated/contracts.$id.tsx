@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { AditivosContratuais } from "@/components/AditivosContratuais";
 import EditarContratoDialog from "@/components/EditarContratoDialog";
+import ContratoDocumentos from "@/components/ContratoDocumentos";
 import {
   addMeasurement,
   contractBalance,
