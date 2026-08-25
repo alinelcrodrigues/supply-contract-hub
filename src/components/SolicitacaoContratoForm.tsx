@@ -76,6 +76,7 @@ export default function SolicitacaoContratoForm({ onDone }: { onDone?: () => voi
       await create.mutateAsync({
         fields: {
           ...form,
+          supplier_id: supplierId,
           deadline_days: Number(form.deadline_days || 0),
           total_value: total,
         },
@@ -90,8 +91,11 @@ export default function SolicitacaoContratoForm({ onDone }: { onDone?: () => voi
         object: "", specification: "", deadline_days: "30", payment_terms: "",
         obligations_contractor: "", obligations_contracted: "", financial_category: "", total_value: "",
       });
+      setSupplierId(null);
+      setSupplierSearch("");
       setRateio([newLine()]);
       setFiles([]);
+
     } catch (e) {
       toast.error((e as Error).message);
     }
