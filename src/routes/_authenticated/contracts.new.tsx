@@ -120,12 +120,7 @@ function NewContract() {
                 </Select>
               </Field>
               <Field label="Categoria financeira *">
-                <Select value={form.financialCategory} onValueChange={(v) => update("financialCategory", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {FINANCIAL_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <FinancialCategorySelect value={form.financialCategory} onChange={(v) => update("financialCategory", v)} />
               </Field>
             </div>
 
