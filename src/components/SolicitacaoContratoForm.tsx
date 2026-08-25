@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useActiveCostCenters } from "@/lib/params-hooks";
 import { useSuppliers, type Supplier } from "@/lib/master-data-hooks";
-import { FINANCIAL_CATEGORIES, formatBRL } from "@/lib/contracts-store";
+import { formatBRL } from "@/lib/contracts-store";
+import { FinancialCategorySelect } from "@/components/FinancialCategorySelect";
 import { useContractRequestMutations } from "@/lib/approvals-hooks";
 
 
