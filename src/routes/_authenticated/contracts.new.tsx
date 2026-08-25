@@ -81,6 +81,13 @@ function NewContract() {
       return null;
     });
     if (!created) return;
+    if (files.length) {
+      try {
+        await uploadContractDocuments(created.id, files);
+      } catch (err) {
+        toast.error((err as Error).message ?? "Contrato criado, mas o anexo falhou.");
+      }
+    }
     toast.success("Contrato cadastrado.");
     navigate({ to: "/contracts/$id", params: { id: created.id } });
     })();
