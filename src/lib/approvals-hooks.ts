@@ -248,7 +248,39 @@ export function useContractRequestMutations() {
       },
       onSuccess: invalidate,
     }),
+    update: useMutation({
+      mutationFn: async (input: {
+        id: string;
+        fields: Record<string, unknown>;
+        rateio?: { cost_center_id: string | null; value: number }[];
+      }) => {
+        const { error } = await db.from("contract_requests").update(input.fields).eq("id", input.id);
+        if (error) throw error;
+        if (input.rateio) {
+          const { error: delErr } = await db
+            .from("contract_request_cost_centers")
+            .delete()
+            .eq("request_id", input.id);
+          if (delErr) throw delErr;
+          if (input.rateio.length) {
+            const { error: insErr } = await db
+              .from("contract_request_cost_centers")
+              .insert(input.rateio.map((r) => ({ ...r, request_id: input.id })));
+            if (insErr) throw insErr;
+          }
+        }
+      },
+      onSuccess: invalidate,
+    }),
+    remove: useMutation({
+      mutationFn: async (id: string) => {
+        const { error } = await db.from("contract_requests").delete().eq("id", id);
+        if (error) throw error;
+      },
+      onSuccess: invalidate,
+    }),
     submit: useMutation({
+
       mutationFn: async (id: string) => {
         const { error } = await db.rpc("fn_submit_contract_request", { _request_id: id });
         if (error) throw error;
