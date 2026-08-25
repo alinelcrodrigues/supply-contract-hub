@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Building2, Package, Truck } from "lucide-react";
+import { Building2, Package, Tags, Truck } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CadastroFornecedores from "@/components/CadastroFornecedores";
 import CadastroProdutosServicos from "@/components/CadastroProdutosServicos";
 import CadastroCentroCusto from "@/components/CadastroCentroCusto";
+import CadastroCategoriaFinanceira from "@/components/CadastroCategoriaFinanceira";
 import { useCanManageMasterData } from "@/lib/master-data-hooks";
 
 export const Route = createFileRoute("/_authenticated/cadastros")({
@@ -64,6 +65,9 @@ function Page() {
         </TabsContent>
         <TabsContent value="cc">
           <CadastroCentroCusto />
+        </TabsContent>
+        <TabsContent value="categorias">
+          <CadastroCategoriaFinanceira />
         </TabsContent>
       </Tabs>
     </div>
