@@ -220,6 +220,48 @@ export type Database = {
           },
         ]
       }
+      contract_documents: {
+        Row: {
+          contract_id: string
+          created_at: string
+          file_name: string
+          file_path: string
+          id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          id?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_documents_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_items: {
         Row: {
           contract_id: string

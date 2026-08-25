@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { AditivosContratuais } from "@/components/AditivosContratuais";
 import EditarContratoDialog from "@/components/EditarContratoDialog";
+import ContratoDocumentos from "@/components/ContratoDocumentos";
 import {
   addMeasurement,
   contractBalance,
@@ -245,6 +246,8 @@ function ContractDetail() {
           </div>
         </CardContent>
       </Card>
+
+      <ContratoDocumentos contractId={contract.id} />
 
       <AditivosContratuais contractId={contract.id} valorOriginal={contract.globalValue} aditivos={contract.addendums} />
 
