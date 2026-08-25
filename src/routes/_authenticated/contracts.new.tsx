@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { addContract, FINANCIAL_CATEGORIES, type Contract } from "@/lib/contracts-store";
+import { addContract, type Contract } from "@/lib/contracts-store";
 import { useActiveCostCenters } from "@/lib/params-hooks";
+import { FinancialCategorySelect } from "@/components/FinancialCategorySelect";
 
 export const Route = createFileRoute("/_authenticated/contracts/new")({
   head: () => ({
