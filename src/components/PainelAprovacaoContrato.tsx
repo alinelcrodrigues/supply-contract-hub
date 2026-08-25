@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatBRL, formatDate } from "@/lib/contracts-store";
-import { useUsers, useCostCenters } from "@/lib/params-hooks";
+import { useUsers, useCostCenters, useCurrentUserRole } from "@/lib/params-hooks";
 import {
   useContractRequests, useContractRequestMutations, useTiers, useCurrentUserId, downloadFile,
   type ContractRequest,
@@ -26,6 +26,7 @@ export default function PainelAprovacaoContrato() {
   const { data: users } = useUsers();
   const { data: costCenters } = useCostCenters();
   const { data: uid } = useCurrentUserId();
+  const { data: role } = useCurrentUserRole();
   const { decide, submit, remove } = useContractRequestMutations();
   const [comments, setComments] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<ContractRequest | null>(null);
@@ -151,7 +152,7 @@ export default function PainelAprovacaoContrato() {
             </div>
           )}
 
-          {r.status !== "aprovada" && (
+          {(role === "admin" || ((r.status === "rascunho" || r.status === "reprovada") && r.requester_id === uid)) && (
             <div className="flex flex-wrap items-center gap-2">
               <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
                 <Pencil className="mr-1 h-4 w-4" /> Editar

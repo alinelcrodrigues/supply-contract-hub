@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatBRL } from "@/lib/contracts-store";
-import { useUsers, useCostCenters } from "@/lib/params-hooks";
+import { useUsers, useCostCenters, useCurrentUserRole } from "@/lib/params-hooks";
 import {
   useApprovalMeasurements, useMeasurementMutations, useTiers, useCurrentUserId, type Measurement,
 } from "@/lib/approvals-hooks";
@@ -25,6 +25,7 @@ export default function PainelAprovacaoMedicao() {
   const { data: users } = useUsers();
   const { data: costCenters } = useCostCenters();
   const { data: uid } = useCurrentUserId();
+  const { data: role } = useCurrentUserRole();
   const { decide, submit, remove } = useMeasurementMutations();
   const [comments, setComments] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<Measurement | null>(null);
@@ -118,7 +119,7 @@ export default function PainelAprovacaoMedicao() {
             </div>
           )}
 
-          {m.status !== "aprovada" && (
+          {(role === "admin" || ((m.status === "rascunho" || m.status === "reprovada") && m.created_by === uid)) && (
             <div className="flex flex-wrap items-center gap-2">
               <Button size="sm" variant="outline" onClick={() => setEditing(m)}>
                 <Pencil className="mr-1 h-4 w-4" /> Editar
