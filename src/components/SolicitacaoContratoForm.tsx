@@ -37,10 +37,26 @@ export default function SolicitacaoContratoForm({ onDone }: { onDone?: () => voi
   });
   const [rateio, setRateio] = useState<RateioLine[]>([newLine()]);
   const [files, setFiles] = useState<File[]>([]);
+  const [supplierSearch, setSupplierSearch] = useState("");
+  const [supplierId, setSupplierId] = useState<string | null>(null);
+  const { data: suppliers = [] } = useSuppliers(supplierSearch);
 
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
   const total = Number(form.total_value || 0);
   const rateioTotal = rateio.reduce((s, l) => s + Number(l.value || 0), 0);
+
+  const pickSupplier = (s: Supplier) => {
+    setSupplierId(s.id);
+    setSupplierSearch("");
+    setForm((f) => ({
+      ...f,
+      supplier_cnpj: s.doc ?? "",
+      supplier_name: s.legal_name || s.trade_name,
+      supplier_address: [s.address, s.district, s.city, s.state, s.zip_code].filter(Boolean).join(", "),
+      supplier_representative: s.representative || s.contact_name,
+    }));
+  };
+
 
   const submit = async (send: boolean) => {
     if (!form.supplier_name.trim() || !form.object.trim()) {
