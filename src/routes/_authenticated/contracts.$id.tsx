@@ -290,7 +290,21 @@ function ContractDetail() {
                 <Textarea value={m.observation} onChange={(e) => setM({ ...m, observation: e.target.value })} placeholder="Informações complementares" />
               </div>
               <p className="text-xs text-muted-foreground">Saldo disponível: {formatBRL(bal.balance)}</p>
-              <Button type="submit" variant="secondary" className="font-semibold">Lançar medição</Button>
+              <div className="flex gap-2">
+                <Button type="submit" variant="secondary" className="flex-1 font-semibold">
+                  {editingMeasurementId ? "Salvar alterações" : "Lançar medição"}
+                </Button>
+                {editingMeasurementId && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => { setEditingMeasurementId(null); setM(emptyMeasurement); }}
+                  >
+                    <X className="mr-1 h-4 w-4" /> Cancelar
+                  </Button>
+                )}
+              </div>
+
             </form>
           </CardContent>
         </Card>
