@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, Send, Save } from "lucide-react";
+import { Plus, Trash2, Send, Save, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useActiveCostCenters } from "@/lib/params-hooks";
+import { useSuppliers, type Supplier } from "@/lib/master-data-hooks";
 import { FINANCIAL_CATEGORIES, formatBRL } from "@/lib/contracts-store";
 import { useContractRequestMutations } from "@/lib/approvals-hooks";
+
 
 type RateioLine = { key: string; costCenterId: string; value: string };
 
@@ -35,10 +37,26 @@ export default function SolicitacaoContratoForm({ onDone }: { onDone?: () => voi
   });
   const [rateio, setRateio] = useState<RateioLine[]>([newLine()]);
   const [files, setFiles] = useState<File[]>([]);
+  const [supplierSearch, setSupplierSearch] = useState("");
+  const [supplierId, setSupplierId] = useState<string | null>(null);
+  const { data: suppliers = [] } = useSuppliers(supplierSearch);
 
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
   const total = Number(form.total_value || 0);
   const rateioTotal = rateio.reduce((s, l) => s + Number(l.value || 0), 0);
+
+  const pickSupplier = (s: Supplier) => {
+    setSupplierId(s.id);
+    setSupplierSearch("");
+    setForm((f) => ({
+      ...f,
+      supplier_cnpj: s.doc ?? "",
+      supplier_name: s.legal_name || s.trade_name,
+      supplier_address: [s.address, s.district, s.city, s.state, s.zip_code].filter(Boolean).join(", "),
+      supplier_representative: s.representative || s.contact_name,
+    }));
+  };
+
 
   const submit = async (send: boolean) => {
     if (!form.supplier_name.trim() || !form.object.trim()) {
@@ -58,6 +76,7 @@ export default function SolicitacaoContratoForm({ onDone }: { onDone?: () => voi
       await create.mutateAsync({
         fields: {
           ...form,
+          supplier_id: supplierId,
           deadline_days: Number(form.deadline_days || 0),
           total_value: total,
         },
@@ -72,8 +91,11 @@ export default function SolicitacaoContratoForm({ onDone }: { onDone?: () => voi
         object: "", specification: "", deadline_days: "30", payment_terms: "",
         obligations_contractor: "", obligations_contracted: "", financial_category: "", total_value: "",
       });
+      setSupplierId(null);
+      setSupplierSearch("");
       setRateio([newLine()]);
       setFiles([]);
+
     } catch (e) {
       toast.error((e as Error).message);
     }
@@ -83,13 +105,50 @@ export default function SolicitacaoContratoForm({ onDone }: { onDone?: () => voi
     <div className="space-y-6">
       <Card>
         <CardHeader><CardTitle>Fornecedor</CardTitle></CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <Field label="CNPJ"><Input value={form.supplier_cnpj} onChange={(e) => set("supplier_cnpj", e.target.value)} placeholder="00.000.000/0001-00" /></Field>
-          <Field label="Razão social"><Input value={form.supplier_name} onChange={(e) => set("supplier_name", e.target.value)} /></Field>
-          <Field label="Endereço"><Input value={form.supplier_address} onChange={(e) => set("supplier_address", e.target.value)} /></Field>
-          <Field label="Representante legal"><Input value={form.supplier_representative} onChange={(e) => set("supplier_representative", e.target.value)} /></Field>
+        <CardContent className="space-y-4">
+          <Field label="Fornecedor cadastrado">
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                className="pl-8"
+                placeholder="Buscar por nome fantasia, razão social ou CNPJ"
+                value={supplierSearch}
+                onChange={(e) => setSupplierSearch(e.target.value)}
+              />
+            </div>
+            {supplierSearch.trim().length > 1 && (
+              <div className="mt-2 max-h-56 overflow-y-auto rounded-md border border-border">
+                {suppliers.length === 0 ? (
+                  <div className="p-3 text-sm text-muted-foreground">Nenhum fornecedor encontrado.</div>
+                ) : (
+                  suppliers.slice(0, 30).map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => pickSupplier(s)}
+                      className="flex w-full items-center justify-between gap-3 border-b border-border px-3 py-2 text-left text-sm last:border-0 hover:bg-muted/50"
+                    >
+                      <span className="font-medium">{s.trade_name}</span>
+                      <span className="font-mono text-xs text-muted-foreground">{s.doc || ""}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+            <p className="mt-1 text-xs text-muted-foreground">
+              Selecione um fornecedor da base. Os campos abaixo são preenchidos automaticamente e podem ser ajustados.
+            </p>
+          </Field>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="CNPJ"><Input value={form.supplier_cnpj} onChange={(e) => set("supplier_cnpj", e.target.value)} placeholder="00.000.000/0001-00" /></Field>
+            <Field label="Razão social"><Input value={form.supplier_name} onChange={(e) => set("supplier_name", e.target.value)} /></Field>
+            <Field label="Endereço"><Input value={form.supplier_address} onChange={(e) => set("supplier_address", e.target.value)} /></Field>
+            <Field label="Representante legal"><Input value={form.supplier_representative} onChange={(e) => set("supplier_representative", e.target.value)} /></Field>
+          </div>
         </CardContent>
       </Card>
+
 
       <Card>
         <CardHeader><CardTitle>Contratação</CardTitle></CardHeader>

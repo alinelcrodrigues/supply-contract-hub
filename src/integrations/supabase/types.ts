@@ -563,6 +563,7 @@ export type Database = {
           status: string
           supplier_address: string
           supplier_cnpj: string
+          supplier_id: string | null
           supplier_name: string
           supplier_representative: string
           tier_id: string | null
@@ -586,6 +587,7 @@ export type Database = {
           status?: string
           supplier_address?: string
           supplier_cnpj?: string
+          supplier_id?: string | null
           supplier_name?: string
           supplier_representative?: string
           tier_id?: string | null
@@ -609,6 +611,7 @@ export type Database = {
           status?: string
           supplier_address?: string
           supplier_cnpj?: string
+          supplier_id?: string | null
           supplier_name?: string
           supplier_representative?: string
           tier_id?: string | null
@@ -628,6 +631,13 @@ export type Database = {
             columns: ["requester_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_requests_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
           {
@@ -917,6 +927,42 @@ export type Database = {
           },
         ]
       }
+      products_services: {
+        Row: {
+          active: boolean
+          created_at: string
+          fiscal_code: string
+          id: string
+          kind: string
+          name: string
+          sku: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          fiscal_code?: string
+          id?: string
+          kind?: string
+          name: string
+          sku?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          fiscal_code?: string
+          id?: string
+          kind?: string
+          name?: string
+          sku?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           active: boolean
@@ -959,6 +1005,69 @@ export type Database = {
           id?: string
           permission?: string
           role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
+      suppliers: {
+        Row: {
+          active: boolean
+          address: string
+          city: string
+          contact_name: string
+          created_at: string
+          district: string
+          doc: string | null
+          doc_type: string
+          email: string
+          id: string
+          legal_name: string
+          notes: string
+          phone: string
+          representative: string
+          state: string
+          trade_name: string
+          updated_at: string
+          zip_code: string
+        }
+        Insert: {
+          active?: boolean
+          address?: string
+          city?: string
+          contact_name?: string
+          created_at?: string
+          district?: string
+          doc?: string | null
+          doc_type?: string
+          email?: string
+          id?: string
+          legal_name?: string
+          notes?: string
+          phone?: string
+          representative?: string
+          state?: string
+          trade_name: string
+          updated_at?: string
+          zip_code?: string
+        }
+        Update: {
+          active?: boolean
+          address?: string
+          city?: string
+          contact_name?: string
+          created_at?: string
+          district?: string
+          doc?: string | null
+          doc_type?: string
+          email?: string
+          id?: string
+          legal_name?: string
+          notes?: string
+          phone?: string
+          representative?: string
+          state?: string
+          trade_name?: string
+          updated_at?: string
+          zip_code?: string
         }
         Relationships: []
       }
@@ -1027,6 +1136,7 @@ export type Database = {
     }
     Functions: {
       can_manage_contracts: { Args: { _user_id: string }; Returns: boolean }
+      can_manage_master_data: { Args: { _user_id: string }; Returns: boolean }
       fn_convert_request_to_contract: {
         Args: { _request_id: string }
         Returns: string
@@ -1062,7 +1172,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "gestor" | "financeiro" | "leitura"
+      app_role: "admin" | "gestor" | "financeiro" | "leitura" | "comprador"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1190,7 +1300,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "gestor", "financeiro", "leitura"],
+      app_role: ["admin", "gestor", "financeiro", "leitura", "comprador"],
     },
   },
 } as const
