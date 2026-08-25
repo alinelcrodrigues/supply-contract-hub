@@ -246,6 +246,8 @@ function ContractDetail() {
         </CardContent>
       </Card>
 
+      <ContratoDocumentos contractId={contract.id} />
+
       <AditivosContratuais contractId={contract.id} valorOriginal={contract.globalValue} aditivos={contract.addendums} />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
