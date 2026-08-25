@@ -155,12 +155,10 @@ export function AditivosContratuais({ contractId, valorOriginal, aditivos }: Pro
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs uppercase tracking-wider text-muted-foreground">Categoria financeira</Label>
-                  <Select value={form.financialCategory} onValueChange={(v) => setForm({ ...form, financialCategory: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {FINANCIAL_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <FinancialCategorySelect
+                    value={form.financialCategory}
+                    onChange={(v) => setForm({ ...form, financialCategory: v })}
+                  />
                 </div>
               </>
             )}
