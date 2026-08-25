@@ -257,7 +257,26 @@ export async function addMeasurement(contractId: string, m: Omit<Measurement, "i
   invalidateContracts();
 }
 
+export async function updateMeasurement(mid: string, m: Omit<Measurement, "id">) {
+  const { error } = await supabase
+    .from("measurements")
+    .update({
+      date: m.date,
+      description: m.description,
+      amount: m.amount,
+      start_date: m.startDate ?? null,
+      end_date: m.endDate ?? null,
+      other_expenses: m.otherExpenses ?? 0,
+      discount: m.discount ?? 0,
+      observation: m.observation ?? null,
+    } as never)
+    .eq("id", mid);
+  if (error) throw error;
+  invalidateContracts();
+}
+
 export async function deleteMeasurement(_contractId: string, mid: string) {
+
   const { error } = await supabase.from("measurements").delete().eq("id", mid);
   if (error) throw error;
   invalidateContracts();

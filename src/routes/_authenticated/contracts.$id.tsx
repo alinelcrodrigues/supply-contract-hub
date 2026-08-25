@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { AditivosContratuais } from "@/components/AditivosContratuais";
+import EditarContratoDialog from "@/components/EditarContratoDialog";
 import {
   addMeasurement,
   contractBalance,
@@ -21,8 +22,10 @@ import {
   formatDate,
   measurementTotal,
   updateContract,
+  updateMeasurement,
   useContractsQuery,
 } from "@/lib/contracts-store";
+
 
 export const Route = createFileRoute("/_authenticated/contracts/$id")({
   head: () => ({
@@ -41,7 +44,7 @@ function ContractDetail() {
   const contract = contracts.find((c) => c.id === id);
 
   const todayIso = new Date().toISOString().slice(0, 10);
-  const [m, setM] = useState({
+  const emptyMeasurement = {
     date: todayIso,
     description: "",
     amount: "",
@@ -50,7 +53,10 @@ function ContractDetail() {
     otherExpenses: "",
     discount: "",
     observation: "",
-  });
+  };
+  const [m, setM] = useState(emptyMeasurement);
+  const [editingMeasurementId, setEditingMeasurementId] = useState<string | null>(null);
+  const [editContractOpen, setEditContractOpen] = useState(false);
 
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">Carregando contrato...</p>;
@@ -68,6 +74,20 @@ function ContractDetail() {
   const bal = contractBalance(contract);
   const days = daysUntil(contract.endDate);
 
+  const startEditMeasurement = (mm: (typeof contract.measurements)[number]) => {
+    setEditingMeasurementId(mm.id);
+    setM({
+      date: mm.date,
+      description: mm.description,
+      amount: String(mm.amount),
+      startDate: mm.startDate ?? "",
+      endDate: mm.endDate ?? "",
+      otherExpenses: mm.otherExpenses ? String(mm.otherExpenses) : "",
+      discount: mm.discount ? String(mm.discount) : "",
+      observation: mm.observation ?? "",
+    });
+  };
+
   const submitMeasurement = (e: React.FormEvent) => {
     e.preventDefault();
     const amount = Number(m.amount);
@@ -78,11 +98,13 @@ function ContractDetail() {
       toast.error("Informe data e valor da medição.");
       return;
     }
-    if (total > bal.balance) {
+    const editingCurrent = contract.measurements.find((x) => x.id === editingMeasurementId);
+    const available = bal.balance + (editingCurrent ? measurementTotal(editingCurrent) : 0);
+    if (total > available) {
       toast.error("Valor total excede o saldo do contrato.");
       return;
     }
-    void addMeasurement(contract.id, {
+    const payload = {
       date: m.date,
       description: m.description || "Medição",
       amount,
@@ -91,19 +113,20 @@ function ContractDetail() {
       otherExpenses: otherExpenses || undefined,
       discount: discount || undefined,
       observation: m.observation || undefined,
-    });
-    setM({
-      date: todayIso,
-      description: "",
-      amount: "",
-      startDate: "",
-      endDate: "",
-      otherExpenses: "",
-      discount: "",
-      observation: "",
-    });
-    toast.success("Medição lançada.");
+    };
+    if (editingMeasurementId) {
+      void updateMeasurement(editingMeasurementId, payload)
+        .then(() => toast.success("Medição atualizada."))
+        .catch((err) => toast.error((err as Error).message));
+    } else {
+      void addMeasurement(contract.id, payload)
+        .then(() => toast.success("Medição lançada."))
+        .catch((err) => toast.error((err as Error).message));
+    }
+    setEditingMeasurementId(null);
+    setM(emptyMeasurement);
   };
+
 
   return (
     <div className="space-y-6">
@@ -111,18 +134,24 @@ function ContractDetail() {
         <Link to="/contracts" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Link>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive hover:bg-destructive/10"
-          onClick={() => {
-            if (confirm("Excluir este contrato?")) {
-              void deleteContract(contract.id).then(() => navigate({ to: "/contracts" }));
-            }
-          }}
-        >
-          <Trash2 className="mr-1 h-4 w-4" /> Excluir contrato
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setEditContractOpen(true)}>
+            <Pencil className="mr-1 h-4 w-4" /> Editar contrato
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:bg-destructive/10"
+            onClick={() => {
+              if (confirm("Excluir este contrato?")) {
+                void deleteContract(contract.id).then(() => navigate({ to: "/contracts" }));
+              }
+            }}
+          >
+            <Trash2 className="mr-1 h-4 w-4" /> Excluir contrato
+          </Button>
+        </div>
+
       </div>
 
       {days <= 60 && (
@@ -221,7 +250,7 @@ function ContractDetail() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <Card>
-          <CardHeader><CardTitle className="text-base">Lançar medição / pagamento</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{editingMeasurementId ? "Editar medição" : "Lançar medição / pagamento"}</CardTitle></CardHeader>
           <CardContent>
             <form onSubmit={submitMeasurement} className="grid gap-4">
               <div className="space-y-2">
@@ -261,7 +290,21 @@ function ContractDetail() {
                 <Textarea value={m.observation} onChange={(e) => setM({ ...m, observation: e.target.value })} placeholder="Informações complementares" />
               </div>
               <p className="text-xs text-muted-foreground">Saldo disponível: {formatBRL(bal.balance)}</p>
-              <Button type="submit" variant="secondary" className="font-semibold">Lançar medição</Button>
+              <div className="flex gap-2">
+                <Button type="submit" variant="secondary" className="flex-1 font-semibold">
+                  {editingMeasurementId ? "Salvar alterações" : "Lançar medição"}
+                </Button>
+                {editingMeasurementId && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => { setEditingMeasurementId(null); setM(emptyMeasurement); }}
+                  >
+                    <X className="mr-1 h-4 w-4" /> Cancelar
+                  </Button>
+                )}
+              </div>
+
             </form>
           </CardContent>
         </Card>
@@ -307,15 +350,26 @@ function ContractDetail() {
                         <td className="px-3 py-2 text-right">{mm.discount ? formatBRL(mm.discount) : "—"}</td>
                         <td className="px-3 py-2 text-right font-medium">{formatBRL(measurementTotal(mm))}</td>
                         <td className="px-3 py-2 text-right">
-                          <button
-                            onClick={() => {
-                              if (confirm("Remover esta medição?")) void deleteMeasurement(contract.id, mm.id);
-                            }}
-                            className="text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => startEditMeasurement(mm)}
+                              className="text-muted-foreground hover:text-primary"
+                              aria-label="Editar medição"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm("Remover esta medição?")) void deleteMeasurement(contract.id, mm.id);
+                              }}
+                              className="text-muted-foreground hover:text-destructive"
+                              aria-label="Remover medição"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
                         </td>
+
                       </tr>
                     ))}
                   </tbody>
@@ -332,9 +386,15 @@ function ContractDetail() {
           </CardContent>
         </Card>
       </div>
+
+      {editContractOpen && (
+        <EditarContratoDialog contract={contract} open onOpenChange={setEditContractOpen} />
+      )}
+
     </div>
   );
 }
+
 
 function Info({ label, value, sub, highlight }: { label: string; value: string; sub?: string; highlight?: boolean }) {
   return (

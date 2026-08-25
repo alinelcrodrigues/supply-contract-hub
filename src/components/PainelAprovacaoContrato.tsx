@@ -1,16 +1,17 @@
 import { useState } from "react";
-import { Check, X, Send, Paperclip } from "lucide-react";
+import { Check, X, Send, Paperclip, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatBRL, formatDate } from "@/lib/contracts-store";
-import { useUsers, useCostCenters } from "@/lib/params-hooks";
+import { useUsers, useCostCenters, useCurrentUserRole } from "@/lib/params-hooks";
 import {
   useContractRequests, useContractRequestMutations, useTiers, useCurrentUserId, downloadFile,
   type ContractRequest,
 } from "@/lib/approvals-hooks";
+import EditarSolicitacaoDialog from "@/components/EditarSolicitacaoDialog";
 
 const statusLabel: Record<string, string> = {
   rascunho: "Rascunho",
@@ -25,8 +26,10 @@ export default function PainelAprovacaoContrato() {
   const { data: users } = useUsers();
   const { data: costCenters } = useCostCenters();
   const { data: uid } = useCurrentUserId();
-  const { decide, submit } = useContractRequestMutations();
+  const { data: role } = useCurrentUserRole();
+  const { decide, submit, remove } = useContractRequestMutations();
   const [comments, setComments] = useState<Record<string, string>>({});
+  const [editing, setEditing] = useState<ContractRequest | null>(null);
 
   const userName = (id: string) => users?.find((u) => u.id === id)?.name ?? "—";
   const ccName = (id: string | null) => costCenters?.find((c) => c.id === id)?.name ?? "Sem centro de custo";
@@ -149,10 +152,31 @@ export default function PainelAprovacaoContrato() {
             </div>
           )}
 
-          {(r.status === "rascunho" || r.status === "reprovada") && r.requester_id === uid && (
-            <Button size="sm" variant="outline" onClick={() => resend(r)} disabled={submit.isPending}>
-              <Send className="mr-1 h-4 w-4" /> {r.status === "reprovada" ? "Corrigir e reenviar" : "Enviar para aprovação"}
-            </Button>
+          {(role === "admin" || ((r.status === "rascunho" || r.status === "reprovada") && r.requester_id === uid)) && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
+                <Pencil className="mr-1 h-4 w-4" /> Editar
+              </Button>
+              {(r.status === "rascunho" || r.status === "reprovada") && (
+                <>
+                  <Button size="sm" variant="outline" onClick={() => resend(r)} disabled={submit.isPending}>
+                    <Send className="mr-1 h-4 w-4" /> {r.status === "reprovada" ? "Corrigir e reenviar" : "Enviar para aprovação"}
+                  </Button>
+                  <Button
+                    size="sm" variant="ghost" className="text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                      if (confirm("Excluir esta solicitação?")) {
+                        remove.mutateAsync(r.id)
+                          .then(() => toast.success("Solicitação excluída."))
+                          .catch((e) => toast.error((e as Error).message));
+                      }
+                    }}
+                  >
+                    <Trash2 className="mr-1 h-4 w-4" /> Excluir
+                  </Button>
+                </>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -171,6 +195,9 @@ export default function PainelAprovacaoContrato() {
         <h2 className="text-lg font-semibold">Demais solicitações</h2>
         {others.map((r) => renderCard(r, false))}
       </section>
+      {editing && (
+        <EditarSolicitacaoDialog request={editing} open onOpenChange={(v) => !v && setEditing(null)} />
+      )}
     </div>
   );
 }

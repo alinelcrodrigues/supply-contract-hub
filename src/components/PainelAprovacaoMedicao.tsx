@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { Check, X, Send } from "lucide-react";
+import { Check, X, Send, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatBRL } from "@/lib/contracts-store";
-import { useUsers, useCostCenters } from "@/lib/params-hooks";
+import { useUsers, useCostCenters, useCurrentUserRole } from "@/lib/params-hooks";
 import {
   useApprovalMeasurements, useMeasurementMutations, useTiers, useCurrentUserId, type Measurement,
 } from "@/lib/approvals-hooks";
+import EditarMedicaoDialog from "@/components/EditarMedicaoDialog";
 
 const statusLabel: Record<string, string> = {
   rascunho: "Rascunho",
@@ -24,8 +25,10 @@ export default function PainelAprovacaoMedicao() {
   const { data: users } = useUsers();
   const { data: costCenters } = useCostCenters();
   const { data: uid } = useCurrentUserId();
-  const { decide, submit } = useMeasurementMutations();
+  const { data: role } = useCurrentUserRole();
+  const { decide, submit, remove } = useMeasurementMutations();
   const [comments, setComments] = useState<Record<string, string>>({});
+  const [editing, setEditing] = useState<Measurement | null>(null);
 
   const userName = (id: string) => users?.find((u) => u.id === id)?.name ?? "—";
   const ccName = (id: string | null) => costCenters?.find((c) => c.id === id)?.name ?? "Sem centro de custo";
@@ -116,17 +119,38 @@ export default function PainelAprovacaoMedicao() {
             </div>
           )}
 
-          {(m.status === "rascunho" || m.status === "reprovada") && m.created_by === uid && (
-            <Button
-              size="sm" variant="outline" disabled={submit.isPending}
-              onClick={() =>
-                submit.mutateAsync(m.id)
-                  .then(() => toast.success("Medição reenviada — aprovação recomeça do primeiro aprovador."))
-                  .catch((e) => toast.error(e.message))
-              }
-            >
-              <Send className="mr-1 h-4 w-4" /> {m.status === "reprovada" ? "Reenviar" : "Enviar para aprovação"}
-            </Button>
+          {(role === "admin" || ((m.status === "rascunho" || m.status === "reprovada") && m.created_by === uid)) && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => setEditing(m)}>
+                <Pencil className="mr-1 h-4 w-4" /> Editar
+              </Button>
+              {(m.status === "rascunho" || m.status === "reprovada") && (
+                <>
+                  <Button
+                    size="sm" variant="outline" disabled={submit.isPending}
+                    onClick={() =>
+                      submit.mutateAsync(m.id)
+                        .then(() => toast.success("Medição reenviada — aprovação recomeça do primeiro aprovador."))
+                        .catch((e) => toast.error(e.message))
+                    }
+                  >
+                    <Send className="mr-1 h-4 w-4" /> {m.status === "reprovada" ? "Reenviar" : "Enviar para aprovação"}
+                  </Button>
+                  <Button
+                    size="sm" variant="ghost" className="text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                      if (confirm("Excluir esta medição?")) {
+                        remove.mutateAsync(m.id)
+                          .then(() => toast.success("Medição excluída."))
+                          .catch((e) => toast.error((e as Error).message));
+                      }
+                    }}
+                  >
+                    <Trash2 className="mr-1 h-4 w-4" /> Excluir
+                  </Button>
+                </>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -145,6 +169,9 @@ export default function PainelAprovacaoMedicao() {
         <h2 className="text-lg font-semibold">Demais medições</h2>
         {others.map((m) => renderCard(m, false))}
       </section>
+      {editing && (
+        <EditarMedicaoDialog measurement={editing} open onOpenChange={(v) => !v && setEditing(null)} />
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,28 @@ export default function ConfiguracaoAlcada({ kind, title }: { kind: TierKind; ti
   const m = useTierMutations(kind);
   const [form, setForm] = useState({ name: "", min: "", max: "" });
   const [approver, setApprover] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [edit, setEdit] = useState({ name: "", min: "", max: "" });
+
+  const startEdit = (t: { id: string; name: string; min_value: number; max_value: number | null }) => {
+    setEditingId(t.id);
+    setEdit({ name: t.name, min: String(t.min_value), max: t.max_value === null ? "" : String(t.max_value) });
+  };
+
+  const saveEdit = (id: string) => {
+    if (!edit.name.trim()) return toast.error("Informe o nome da faixa.");
+    run(
+      m.updateTier.mutateAsync({
+        id,
+        patch: {
+          name: edit.name.trim(),
+          min_value: Number(edit.min || 0),
+          max_value: edit.max === "" ? null : Number(edit.max),
+        },
+      }),
+      "Faixa atualizada.",
+    ).then(() => setEditingId(null));
+  };
 
   const run = async (p: Promise<unknown>, ok: string) => {
     try { await p; toast.success(ok); } catch (e) { toast.error((e as Error).message); }
@@ -62,12 +84,35 @@ export default function ConfiguracaoAlcada({ kind, title }: { kind: TierKind; ti
       {(tiers ?? []).map((t) => (
         <Card key={t.id}>
           <CardHeader className="flex flex-row items-start justify-between gap-4">
-            <div>
-              <CardTitle className="text-base">{t.name}</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {formatBRL(t.min_value)} até {t.max_value === null ? "sem teto" : formatBRL(t.max_value)}
-              </p>
-            </div>
+            {editingId === t.id ? (
+              <div className="flex flex-1 flex-wrap items-end gap-3">
+                <div className="min-w-[180px] flex-1">
+                  <Label className="text-xs text-muted-foreground">Nome da faixa</Label>
+                  <Input value={edit.name} onChange={(e) => setEdit((f) => ({ ...f, name: e.target.value }))} />
+                </div>
+                <div className="w-36">
+                  <Label className="text-xs text-muted-foreground">Mínimo</Label>
+                  <Input type="number" min={0} step="0.01" value={edit.min} onChange={(e) => setEdit((f) => ({ ...f, min: e.target.value }))} />
+                </div>
+                <div className="w-36">
+                  <Label className="text-xs text-muted-foreground">Máximo</Label>
+                  <Input type="number" min={0} step="0.01" value={edit.max} onChange={(e) => setEdit((f) => ({ ...f, max: e.target.value }))} />
+                </div>
+                <Button size="sm" onClick={() => saveEdit(t.id)} disabled={m.updateTier.isPending}>
+                  <Check className="mr-1 h-4 w-4" /> Salvar
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
+                  <X className="mr-1 h-4 w-4" /> Cancelar
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <CardTitle className="text-base">{t.name}</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {formatBRL(t.min_value)} até {t.max_value === null ? "sem teto" : formatBRL(t.max_value)}
+                </p>
+              </div>
+            )}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <Label className="text-xs text-muted-foreground">Ativa</Label>
@@ -76,6 +121,9 @@ export default function ConfiguracaoAlcada({ kind, title }: { kind: TierKind; ti
                   onCheckedChange={(v) => run(m.updateTier.mutateAsync({ id: t.id, patch: { active: v } }), "Faixa atualizada.")}
                 />
               </div>
+              <Button variant="ghost" size="icon" onClick={() => startEdit(t)} aria-label="Editar faixa">
+                <Pencil className="h-4 w-4" />
+              </Button>
               <Button variant="ghost" size="icon" onClick={() => run(m.removeTier.mutateAsync(t.id), "Faixa removida.")}>
                 <Trash2 className="h-4 w-4" />
               </Button>
