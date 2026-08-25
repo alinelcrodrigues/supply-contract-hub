@@ -386,9 +386,12 @@ function ContractDetail() {
           </CardContent>
         </Card>
       </div>
+
+      <EditarContratoDialog contract={contract} open={editContractOpen} onOpenChange={setEditContractOpen} />
     </div>
   );
 }
+
 
 function Info({ label, value, sub, highlight }: { label: string; value: string; sub?: string; highlight?: boolean }) {
   return (
