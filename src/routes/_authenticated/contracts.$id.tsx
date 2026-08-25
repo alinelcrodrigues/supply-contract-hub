@@ -387,7 +387,10 @@ function ContractDetail() {
         </Card>
       </div>
 
-      <EditarContratoDialog contract={contract} open={editContractOpen} onOpenChange={setEditContractOpen} />
+      {editContractOpen && (
+        <EditarContratoDialog contract={contract} open onOpenChange={setEditContractOpen} />
+      )}
+
     </div>
   );
 }
