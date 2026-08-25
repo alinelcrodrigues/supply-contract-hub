@@ -50,6 +50,10 @@ function Page() {
             <Building2 className="h-4 w-4" />
             Centros de custo
           </TabsTrigger>
+          <TabsTrigger value="categorias" className="gap-2">
+            <Tags className="h-4 w-4" />
+            Categorias
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="fornecedores">
