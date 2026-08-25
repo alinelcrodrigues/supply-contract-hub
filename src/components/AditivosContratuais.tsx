@@ -18,11 +18,11 @@ import {
   deleteAddendum,
   formatBRL,
   formatDate,
-  FINANCIAL_CATEGORIES,
   type Addendum,
   type AddendumType,
 } from "@/lib/contracts-store";
 import { useActiveCostCenters } from "@/lib/params-hooks";
+import { FinancialCategorySelect } from "@/components/FinancialCategorySelect";
 
 interface Props {
   contractId: string;
