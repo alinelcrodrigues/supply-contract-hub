@@ -45,7 +45,7 @@ export function AditivosContratuais({ contractId, valorOriginal, aditivos }: Pro
     valor: "",
     data: todayIso,
     costCenterId: "",
-    financialCategory: FINANCIAL_CATEGORIES[0] as string,
+    financialCategory: "",
   });
 
   const somaAditivos = aditivos.reduce(
