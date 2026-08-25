@@ -187,6 +187,28 @@ function NewContract() {
               <Switch checked={form.signed} onCheckedChange={(v) => update("signed", v)} />
             </div>
 
+            <Field label="Anexar contrato (PDF)">
+              <Input
+                type="file"
+                accept="application/pdf"
+                multiple
+                onChange={(e) => {
+                  const list = Array.from(e.target.files ?? []).filter(
+                    (f) => f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"),
+                  );
+                  if (e.target.files?.length && list.length !== e.target.files.length) {
+                    toast.error("Somente arquivos PDF são aceitos.");
+                  }
+                  setFiles(list);
+                }}
+              />
+              {files.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {files.length} arquivo(s): {files.map((f) => f.name).join(", ")}
+                </p>
+              )}
+            </Field>
+
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="ghost" onClick={() => history.back()}>Cancelar</Button>
               <Button type="submit" variant="secondary" className="font-semibold">Cadastrar contrato</Button>
