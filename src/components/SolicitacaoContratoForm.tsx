@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, Send, Save } from "lucide-react";
+import { Plus, Trash2, Send, Save, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useActiveCostCenters } from "@/lib/params-hooks";
+import { useSuppliers, type Supplier } from "@/lib/master-data-hooks";
 import { FINANCIAL_CATEGORIES, formatBRL } from "@/lib/contracts-store";
 import { useContractRequestMutations } from "@/lib/approvals-hooks";
+
 
 type RateioLine = { key: string; costCenterId: string; value: string };
 
