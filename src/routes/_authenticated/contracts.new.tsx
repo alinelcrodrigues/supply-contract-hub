@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { addContract, FINANCIAL_CATEGORIES, type Contract } from "@/lib/contracts-store";
+import { addContract, type Contract } from "@/lib/contracts-store";
 import { useActiveCostCenters } from "@/lib/params-hooks";
+import { FinancialCategorySelect } from "@/components/FinancialCategorySelect";
 
 export const Route = createFileRoute("/_authenticated/contracts/new")({
   head: () => ({
@@ -43,7 +44,7 @@ function NewContract() {
     adjustmentMonth: 1,
     signed: false,
     costCenterId: "",
-    financialCategory: FINANCIAL_CATEGORIES[0] as string,
+    financialCategory: "",
   });
 
   const update = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
@@ -120,12 +121,7 @@ function NewContract() {
                 </Select>
               </Field>
               <Field label="Categoria financeira *">
-                <Select value={form.financialCategory} onValueChange={(v) => update("financialCategory", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {FINANCIAL_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <FinancialCategorySelect value={form.financialCategory} onChange={(v) => update("financialCategory", v)} />
               </Field>
             </div>
 

@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useActiveCostCenters } from "@/lib/params-hooks";
 import { useSuppliers, type Supplier } from "@/lib/master-data-hooks";
-import { FINANCIAL_CATEGORIES, formatBRL } from "@/lib/contracts-store";
+import { formatBRL } from "@/lib/contracts-store";
+import { FinancialCategorySelect } from "@/components/FinancialCategorySelect";
 import { useContractRequestMutations } from "@/lib/approvals-hooks";
 
 
@@ -159,12 +160,10 @@ export default function SolicitacaoContratoForm({ onDone }: { onDone?: () => voi
           <Field label="Valor total (R$)"><Input type="number" min={0} step="0.01" value={form.total_value} onChange={(e) => set("total_value", e.target.value)} /></Field>
           <Field label="Condição de pagamento" className="sm:col-span-2"><Textarea rows={2} value={form.payment_terms} onChange={(e) => set("payment_terms", e.target.value)} /></Field>
           <Field label="Categoria financeira">
-            <Select value={form.financial_category} onValueChange={(v) => set("financial_category", v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {FINANCIAL_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <FinancialCategorySelect
+              value={form.financial_category}
+              onChange={(v) => set("financial_category", v)}
+            />
           </Field>
           <Field label="Obrigações da contratante" className="sm:col-span-2"><Textarea rows={2} value={form.obligations_contractor} onChange={(e) => set("obligations_contractor", e.target.value)} /></Field>
           <Field label="Obrigações da contratada" className="sm:col-span-2"><Textarea rows={2} value={form.obligations_contracted} onChange={(e) => set("obligations_contracted", e.target.value)} /></Field>

@@ -18,11 +18,11 @@ import {
   deleteAddendum,
   formatBRL,
   formatDate,
-  FINANCIAL_CATEGORIES,
   type Addendum,
   type AddendumType,
 } from "@/lib/contracts-store";
 import { useActiveCostCenters } from "@/lib/params-hooks";
+import { FinancialCategorySelect } from "@/components/FinancialCategorySelect";
 
 interface Props {
   contractId: string;
@@ -45,7 +45,7 @@ export function AditivosContratuais({ contractId, valorOriginal, aditivos }: Pro
     valor: "",
     data: todayIso,
     costCenterId: "",
-    financialCategory: FINANCIAL_CATEGORIES[0] as string,
+    financialCategory: "",
   });
 
   const somaAditivos = aditivos.reduce(
@@ -155,12 +155,10 @@ export function AditivosContratuais({ contractId, valorOriginal, aditivos }: Pro
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs uppercase tracking-wider text-muted-foreground">Categoria financeira</Label>
-                  <Select value={form.financialCategory} onValueChange={(v) => setForm({ ...form, financialCategory: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {FINANCIAL_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <FinancialCategorySelect
+                    value={form.financialCategory}
+                    onChange={(v) => setForm({ ...form, financialCategory: v })}
+                  />
                 </div>
               </>
             )}

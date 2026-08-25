@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Building2, Package, Truck } from "lucide-react";
+import { Building2, Package, Tags, Truck } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CadastroFornecedores from "@/components/CadastroFornecedores";
 import CadastroProdutosServicos from "@/components/CadastroProdutosServicos";
 import CadastroCentroCusto from "@/components/CadastroCentroCusto";
+import CadastroCategoriaFinanceira from "@/components/CadastroCategoriaFinanceira";
 import { useCanManageMasterData } from "@/lib/master-data-hooks";
 
 export const Route = createFileRoute("/_authenticated/cadastros")({
@@ -37,7 +38,7 @@ function Page() {
       </div>
 
       <Tabs defaultValue="fornecedores" className="space-y-6">
-        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+        <TabsList className="grid w-full max-w-3xl grid-cols-4">
           <TabsTrigger value="fornecedores" className="gap-2">
             <Truck className="h-4 w-4" />
             Fornecedores
@@ -50,6 +51,10 @@ function Page() {
             <Building2 className="h-4 w-4" />
             Centros de custo
           </TabsTrigger>
+          <TabsTrigger value="categorias" className="gap-2">
+            <Tags className="h-4 w-4" />
+            Categorias
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="fornecedores">
@@ -60,6 +65,9 @@ function Page() {
         </TabsContent>
         <TabsContent value="cc">
           <CadastroCentroCusto />
+        </TabsContent>
+        <TabsContent value="categorias">
+          <CadastroCategoriaFinanceira />
         </TabsContent>
       </Tabs>
     </div>
