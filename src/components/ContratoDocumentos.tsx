@@ -5,6 +5,7 @@ import { FileText, Loader2, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { createStoragePath } from "@/lib/storage-path";
 
 export const CONTRACT_DOCS_BUCKET = "contract-documents";
 
@@ -24,7 +25,7 @@ export async function uploadContractDocuments(contractId: string, files: File[])
   const { data: userData } = await supabase.auth.getUser();
   const uid = userData.user?.id ?? null;
   for (const file of files) {
-    const path = `${contractId}/${Date.now()}-${file.name}`;
+    const path = createStoragePath(contractId, file.name);
     const { error: upErr } = await supabase.storage
       .from(CONTRACT_DOCS_BUCKET)
       .upload(path, file, { contentType: file.type || "application/pdf" });

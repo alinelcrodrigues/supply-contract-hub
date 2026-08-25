@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { createStoragePath } from "@/lib/storage-path";
 
 /* =========================================================
    Tipos
@@ -231,7 +232,7 @@ export function useContractRequestMutations() {
         }
 
         for (const file of input.files) {
-          const path = `${requestId}/${Date.now()}-${file.name}`;
+          const path = createStoragePath(requestId, file.name);
           const { error: upErr } = await supabase.storage.from("contract-request-documents").upload(path, file);
           if (upErr) throw upErr;
           const { error: docErr } = await db.from("contract_request_documents").insert({
@@ -440,7 +441,7 @@ export function useMovementMutations() {
       mutationFn: async (input: { movementId: string; docType: string; docNumber: string; file: File; dueDate?: string }) => {
         const { data: userRes } = await supabase.auth.getUser();
         const uid = userRes.user?.id ?? null;
-        const path = `${input.movementId}/${Date.now()}-${input.file.name}`;
+        const path = createStoragePath(input.movementId, input.file.name);
         const { error: upErr } = await supabase.storage.from("billing-documents").upload(path, input.file);
         if (upErr) throw upErr;
         const { error } = await db.from("billing_documents").insert({
