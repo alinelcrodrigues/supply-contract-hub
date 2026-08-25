@@ -134,18 +134,24 @@ function ContractDetail() {
         <Link to="/contracts" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Link>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive hover:bg-destructive/10"
-          onClick={() => {
-            if (confirm("Excluir este contrato?")) {
-              void deleteContract(contract.id).then(() => navigate({ to: "/contracts" }));
-            }
-          }}
-        >
-          <Trash2 className="mr-1 h-4 w-4" /> Excluir contrato
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setEditContractOpen(true)}>
+            <Pencil className="mr-1 h-4 w-4" /> Editar contrato
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:bg-destructive/10"
+            onClick={() => {
+              if (confirm("Excluir este contrato?")) {
+                void deleteContract(contract.id).then(() => navigate({ to: "/contracts" }));
+              }
+            }}
+          >
+            <Trash2 className="mr-1 h-4 w-4" /> Excluir contrato
+          </Button>
+        </div>
+
       </div>
 
       {days <= 60 && (
