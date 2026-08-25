@@ -37,7 +37,7 @@ function Page() {
       </div>
 
       <Tabs defaultValue="fornecedores" className="space-y-6">
-        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+        <TabsList className="grid w-full max-w-3xl grid-cols-4">
           <TabsTrigger value="fornecedores" className="gap-2">
             <Truck className="h-4 w-4" />
             Fornecedores
