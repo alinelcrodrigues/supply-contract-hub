@@ -350,15 +350,26 @@ function ContractDetail() {
                         <td className="px-3 py-2 text-right">{mm.discount ? formatBRL(mm.discount) : "—"}</td>
                         <td className="px-3 py-2 text-right font-medium">{formatBRL(measurementTotal(mm))}</td>
                         <td className="px-3 py-2 text-right">
-                          <button
-                            onClick={() => {
-                              if (confirm("Remover esta medição?")) void deleteMeasurement(contract.id, mm.id);
-                            }}
-                            className="text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => startEditMeasurement(mm)}
+                              className="text-muted-foreground hover:text-primary"
+                              aria-label="Editar medição"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm("Remover esta medição?")) void deleteMeasurement(contract.id, mm.id);
+                              }}
+                              className="text-muted-foreground hover:text-destructive"
+                              aria-label="Remover medição"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
                         </td>
+
                       </tr>
                     ))}
                   </tbody>
