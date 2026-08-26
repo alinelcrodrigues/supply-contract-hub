@@ -83,6 +83,42 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          action: string
+          changed_by: string | null
+          changed_fields: string[]
+          created_at: string
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          table_name: string
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          changed_fields?: string[]
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name: string
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          changed_fields?: string[]
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
       billing_documents: {
         Row: {
           created_at: string
@@ -841,6 +877,9 @@ export type Database = {
       }
       contract_measurements: {
         Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           contract_id: string
           created_at: string
           created_by: string
@@ -855,6 +894,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           contract_id: string
           created_at?: string
           created_by: string
@@ -869,6 +911,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           contract_id?: string
           created_at?: string
           created_by?: string
@@ -1034,6 +1079,9 @@ export type Database = {
       }
       contract_requests: {
         Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           contract_id: string | null
           created_at: string
           current_step: number
@@ -1058,6 +1106,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           contract_id?: string | null
           created_at?: string
           current_step?: number
@@ -1082,6 +1133,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           contract_id?: string | null
           created_at?: string
           current_step?: number
@@ -1141,6 +1195,9 @@ export type Database = {
           adjustment_index: string
           adjustment_month: number
           budget_value: number | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           cost_center_id: string | null
           created_at: string
           created_by: string | null
@@ -1152,6 +1209,7 @@ export type Database = {
           object: string
           signed: boolean
           start_date: string
+          status: string
           supplier: string
           updated_at: string
         }
@@ -1159,6 +1217,9 @@ export type Database = {
           adjustment_index?: string
           adjustment_month?: number
           budget_value?: number | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           cost_center_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -1170,6 +1231,7 @@ export type Database = {
           object?: string
           signed?: boolean
           start_date: string
+          status?: string
           supplier: string
           updated_at?: string
         }
@@ -1177,6 +1239,9 @@ export type Database = {
           adjustment_index?: string
           adjustment_month?: number
           budget_value?: number | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           cost_center_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -1188,6 +1253,7 @@ export type Database = {
           object?: string
           signed?: boolean
           start_date?: string
+          status?: string
           supplier?: string
           updated_at?: string
         }
@@ -1651,6 +1717,18 @@ export type Database = {
     Functions: {
       can_manage_contracts: { Args: { _user_id: string }; Returns: boolean }
       can_manage_master_data: { Args: { _user_id: string }; Returns: boolean }
+      fn_cancel_contract: {
+        Args: { _contract_id: string; _reason: string; _user_id: string }
+        Returns: undefined
+      }
+      fn_cancel_contract_request: {
+        Args: { _reason: string; _request_id: string; _user_id: string }
+        Returns: undefined
+      }
+      fn_cancel_measurement: {
+        Args: { _measurement_id: string; _reason: string; _user_id: string }
+        Returns: undefined
+      }
       fn_convert_request_to_contract: {
         Args: { _request_id: string }
         Returns: string
