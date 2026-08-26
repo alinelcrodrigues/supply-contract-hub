@@ -5,16 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
    Tipos
    ========================================================= */
 
+export type MeasurementStatus = "rascunho" | "em_aprovacao" | "aprovada" | "reprovada";
+
+/** Medição do fluxo de alçada (tabela contract_measurements). */
 export type Measurement = {
   id: string;
-  date: string; // ISO yyyy-mm-dd
+  date: string; // mês de referência (ISO yyyy-mm-dd)
   description: string;
-  amount: number;
-  startDate?: string;
-  endDate?: string;
-  otherExpenses?: number;
-  discount?: number;
-  observation?: string;
+  amount: number; // total_value
+  status: MeasurementStatus;
 };
 
 export type ContractItem = {
@@ -90,7 +89,7 @@ const SELECT = `
   *,
   cost_centers ( name ),
   contract_items ( *, cost_centers ( name ) ),
-  measurements ( * ),
+  contract_measurements ( id, reference_month, total_value, notes, status ),
   contract_addendums ( *, contract_addendum_items ( *, cost_centers ( name ) ) )
 `;
 
@@ -123,19 +122,15 @@ function mapContract(r: Row): Contract {
     costCenterId: r.cost_center_id ?? null,
     costCenter: r.cost_centers?.name ?? "Sem centro de custo",
     financialCategory: r.financial_category ?? "",
-    measurements: (r.measurements ?? [])
-      .map((m: Row) => ({
+    measurements: (r.contract_measurements ?? [])
+      .map((m: Row): Measurement => ({
         id: m.id,
-        date: m.date,
-        description: m.description ?? "",
-        amount: Number(m.amount ?? 0),
-        startDate: m.start_date ?? undefined,
-        endDate: m.end_date ?? undefined,
-        otherExpenses: m.other_expenses ? Number(m.other_expenses) : undefined,
-        discount: m.discount ? Number(m.discount) : undefined,
-        observation: m.observation ?? undefined,
+        date: m.reference_month,
+        description: m.notes ?? "",
+        amount: Number(m.total_value ?? 0),
+        status: m.status as MeasurementStatus,
       }))
-      .sort((a: Measurement, b: Measurement) => b.date.localeCompare(a.date)),
+      .sort((a, b) => b.date.localeCompare(a.date)),
     items: (r.contract_items ?? []).map(mapItem),
     addendums: (r.contract_addendums ?? [])
       .map((a: Row): Addendum => ({
@@ -237,47 +232,6 @@ export async function updateContract(id: string, patch: Partial<Contract>) {
 
 export async function deleteContract(id: string) {
   const { error } = await supabase.from("contracts").delete().eq("id", id);
-  if (error) throw error;
-  invalidateContracts();
-}
-
-export async function addMeasurement(contractId: string, m: Omit<Measurement, "id">) {
-  const { error } = await supabase.from("measurements").insert({
-    contract_id: contractId,
-    date: m.date,
-    description: m.description,
-    amount: m.amount,
-    start_date: m.startDate ?? null,
-    end_date: m.endDate ?? null,
-    other_expenses: m.otherExpenses ?? 0,
-    discount: m.discount ?? 0,
-    observation: m.observation ?? null,
-  });
-  if (error) throw error;
-  invalidateContracts();
-}
-
-export async function updateMeasurement(mid: string, m: Omit<Measurement, "id">) {
-  const { error } = await supabase
-    .from("measurements")
-    .update({
-      date: m.date,
-      description: m.description,
-      amount: m.amount,
-      start_date: m.startDate ?? null,
-      end_date: m.endDate ?? null,
-      other_expenses: m.otherExpenses ?? 0,
-      discount: m.discount ?? 0,
-      observation: m.observation ?? null,
-    } as never)
-    .eq("id", mid);
-  if (error) throw error;
-  invalidateContracts();
-}
-
-export async function deleteMeasurement(_contractId: string, mid: string) {
-
-  const { error } = await supabase.from("measurements").delete().eq("id", mid);
   if (error) throw error;
   invalidateContracts();
 }
@@ -423,10 +377,6 @@ export const formatDate = (iso: string) => {
   return `${d}/${m}/${y}`;
 };
 
-export function measurementTotal(m: Measurement): number {
-  return m.amount + (m.otherExpenses || 0) - (m.discount || 0);
-}
-
 export function addendumsTotal(c: Contract): number {
   return c.addendums.reduce((s, a) => s + (a.tipo === "ajuste_valor" ? a.value : a.items.reduce((x, i) => x + i.value, 0)), 0);
 }
@@ -436,8 +386,11 @@ export function contractCurrentValue(c: Contract): number {
   return c.globalValue + addendumsTotal(c);
 }
 
+/** Saldo do contrato: abate apenas medições APROVADAS (fluxo de alçada). */
 export function contractBalance(c: Contract) {
-  const paid = c.measurements.reduce((s, m) => s + measurementTotal(m), 0);
+  const paid = c.measurements
+    .filter((m) => m.status === "aprovada")
+    .reduce((s, m) => s + m.amount, 0);
   const total = contractCurrentValue(c);
   return { paid, balance: total - paid, pct: total ? paid / total : 0, total };
 }
