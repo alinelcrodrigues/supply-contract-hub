@@ -30,6 +30,7 @@ const STATUS_LABEL: Record<MeasurementStatus, string> = {
   em_aprovacao: "Em aprovação",
   aprovada: "Aprovada",
   reprovada: "Reprovada",
+  cancelado: "Cancelado",
 };
 
 
