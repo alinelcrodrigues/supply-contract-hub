@@ -1232,6 +1232,10 @@ export type Database = {
         Args: { _measurement_id: string }
         Returns: undefined
       }
+      has_permission: {
+        Args: { _permission: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
