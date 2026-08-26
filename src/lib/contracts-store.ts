@@ -130,7 +130,7 @@ function mapContract(r: Row): Contract {
         amount: Number(m.total_value ?? 0),
         status: m.status as MeasurementStatus,
       }))
-      .sort((a, b) => b.date.localeCompare(a.date)),
+      .sort((a: Measurement, b: Measurement) => b.date.localeCompare(a.date)),
     items: (r.contract_items ?? []).map(mapItem),
     addendums: (r.contract_addendums ?? [])
       .map((a: Row): Addendum => ({
