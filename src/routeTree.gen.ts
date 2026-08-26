@@ -13,7 +13,9 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedCarreteirosRouteImport } from './routes/_authenticated/carreteiros'
 import { Route as AuthenticatedCadastrosRouteImport } from './routes/_authenticated/cadastros'
 import { Route as AuthenticatedAlcadasRouteImport } from './routes/_authenticated/alcadas'
 import { Route as AuthenticatedSolicitacoesIndexRouteImport } from './routes/_authenticated/solicitacoes.index'
@@ -43,11 +45,22 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   id: '/financeiro',
   path: '/financeiro',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCarreteirosRoute =
+  AuthenticatedCarreteirosRouteImport.update({
+    id: '/carreteiros',
+    path: '/carreteiros',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCadastrosRoute = AuthenticatedCadastrosRouteImport.update({
   id: '/cadastros',
   path: '/cadastros',
@@ -106,7 +119,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/alcadas': typeof AuthenticatedAlcadasRoute
   '/cadastros': typeof AuthenticatedCadastrosRoute
+  '/carreteiros': typeof AuthenticatedCarreteirosRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/contracts/$id': typeof AuthenticatedContractsIdRoute
   '/contracts/new': typeof AuthenticatedContractsNewRoute
@@ -120,7 +135,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/alcadas': typeof AuthenticatedAlcadasRoute
   '/cadastros': typeof AuthenticatedCadastrosRoute
+  '/carreteiros': typeof AuthenticatedCarreteirosRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/': typeof AuthenticatedIndexRoute
   '/contracts/$id': typeof AuthenticatedContractsIdRoute
@@ -137,7 +154,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/alcadas': typeof AuthenticatedAlcadasRoute
   '/_authenticated/cadastros': typeof AuthenticatedCadastrosRoute
+  '/_authenticated/carreteiros': typeof AuthenticatedCarreteirosRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/contracts/$id': typeof AuthenticatedContractsIdRoute
@@ -155,7 +174,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/alcadas'
     | '/cadastros'
+    | '/carreteiros'
     | '/financeiro'
+    | '/historico'
     | '/settings'
     | '/contracts/$id'
     | '/contracts/new'
@@ -169,7 +190,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/alcadas'
     | '/cadastros'
+    | '/carreteiros'
     | '/financeiro'
+    | '/historico'
     | '/settings'
     | '/'
     | '/contracts/$id'
@@ -185,7 +208,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/alcadas'
     | '/_authenticated/cadastros'
+    | '/_authenticated/carreteiros'
     | '/_authenticated/financeiro'
+    | '/_authenticated/historico'
     | '/_authenticated/settings'
     | '/_authenticated/'
     | '/_authenticated/contracts/$id'
@@ -232,11 +257,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/historico': {
+      id: '/_authenticated/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/financeiro': {
       id: '/_authenticated/financeiro'
       path: '/financeiro'
       fullPath: '/financeiro'
       preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/carreteiros': {
+      id: '/_authenticated/carreteiros'
+      path: '/carreteiros'
+      fullPath: '/carreteiros'
+      preLoaderRoute: typeof AuthenticatedCarreteirosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cadastros': {
@@ -308,7 +347,9 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAlcadasRoute: typeof AuthenticatedAlcadasRoute
   AuthenticatedCadastrosRoute: typeof AuthenticatedCadastrosRoute
+  AuthenticatedCarreteirosRoute: typeof AuthenticatedCarreteirosRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
+  AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedContractsIdRoute: typeof AuthenticatedContractsIdRoute
@@ -323,7 +364,9 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAlcadasRoute: AuthenticatedAlcadasRoute,
   AuthenticatedCadastrosRoute: AuthenticatedCadastrosRoute,
+  AuthenticatedCarreteirosRoute: AuthenticatedCarreteirosRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
+  AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedContractsIdRoute: AuthenticatedContractsIdRoute,
