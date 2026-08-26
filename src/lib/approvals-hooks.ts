@@ -17,7 +17,7 @@ export type Tier = {
   steps: { id: string; step_order: number; approver_id: string }[];
 };
 
-export type RequestStatus = "rascunho" | "em_aprovacao" | "aprovada" | "reprovada";
+export type RequestStatus = "rascunho" | "em_aprovacao" | "aprovada" | "reprovada" | "cancelado";
 
 export type ContractRequest = {
   id: string;

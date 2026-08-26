@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
    Tipos
    ========================================================= */
 
-export type MeasurementStatus = "rascunho" | "em_aprovacao" | "aprovada" | "reprovada";
+export type MeasurementStatus = "rascunho" | "em_aprovacao" | "aprovada" | "reprovada" | "cancelado";
 
 /** Medição do fluxo de alçada (tabela contract_measurements). */
 export type Measurement = {
