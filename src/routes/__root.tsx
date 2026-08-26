@@ -8,7 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { LayoutDashboard, FileText, LogOut, Settings, ClipboardList, Ruler, Wallet, SlidersHorizontal, Boxes } from "lucide-react";
+import { LayoutDashboard, FileText, LogOut, Settings, ClipboardList, Ruler, Wallet, SlidersHorizontal, Boxes, Truck, History } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
