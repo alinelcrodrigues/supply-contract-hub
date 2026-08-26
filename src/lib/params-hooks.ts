@@ -5,6 +5,7 @@ export const ROLES = [
   { id: "admin", label: "Administrador", description: "Acesso total ao sistema." },
   { id: "gestor", label: "Gestor de contratos", description: "Cria e edita contratos e medições." },
   { id: "financeiro", label: "Financeiro", description: "Lança medições, despesas e descontos." },
+  { id: "comprador", label: "Comprador", description: "Gerencia cadastros mestres e aprovações de compra." },
   { id: "leitura", label: "Somente leitura", description: "Consulta contratos sem editar." },
 ] as const;
 
