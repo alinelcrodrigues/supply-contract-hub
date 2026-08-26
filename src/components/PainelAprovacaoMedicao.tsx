@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, X, Send, Pencil, Trash2 } , History } from "lucide-react";
+import { Check, X, Send, Pencil, Trash2, History } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,7 @@ export default function PainelAprovacaoMedicao() {
   const { data: costCenters } = useCostCenters();
   const { data: uid } = useCurrentUserId();
   const { data: role } = useCurrentUserRole();
+  const [historyFor, setHistoryFor] = useState<string | null>(null);
   const cancelMut = useCancelMutations();
   const { decide, submit, remove } = useMeasurementMutations();
   const [comments, setComments] = useState<Record<string, string>>({});
