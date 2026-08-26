@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, History, Pencil, Plus, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,10 @@ import { Switch } from "@/components/ui/switch";
 import { AditivosContratuais } from "@/components/AditivosContratuais";
 import EditarContratoDialog from "@/components/EditarContratoDialog";
 import ContratoDocumentos from "@/components/ContratoDocumentos";
+import CancelarDialog from "@/components/CancelarDialog";
+import HistoricoAlteracoes from "@/components/HistoricoAlteracoes";
+import { useCancelMutations } from "@/lib/audit-hooks";
+import { useCurrentUserRole } from "@/lib/params-hooks";
 import {
   contractBalance,
   daysUntil,
@@ -46,6 +50,10 @@ function ContractDetail() {
   const contract = contracts.find((c) => c.id === id);
 
   const [editContractOpen, setEditContractOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const { data: role } = useCurrentUserRole();
+  const { cancelContract } = useCancelMutations();
+  const canManageContracts = role === "admin" || role === "gestor";
 
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">Carregando contrato...</p>;
@@ -142,6 +150,9 @@ function ContractDetail() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold tracking-tight">{contract.number}</h1>
+                {contract.status === "cancelado" && (
+                  <Badge className="bg-muted text-muted-foreground line-through">Cancelado</Badge>
+                )}
                 {contract.signed ? (
                   <Badge className="bg-primary text-primary-foreground">Assinado</Badge>
                 ) : (
