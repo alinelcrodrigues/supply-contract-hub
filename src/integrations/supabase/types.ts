@@ -131,6 +131,451 @@ export type Database = {
           },
         ]
       }
+      carreteiro_closings: {
+        Row: {
+          contract_id: string
+          created_at: string
+          created_by: string | null
+          fuel_total: number
+          id: string
+          loads_total: number
+          measurement_id: string | null
+          net_total: number
+          period_end: string
+          period_start: string
+          updated_at: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          created_by?: string | null
+          fuel_total?: number
+          id?: string
+          loads_total?: number
+          measurement_id?: string | null
+          net_total?: number
+          period_end: string
+          period_start: string
+          updated_at?: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          created_by?: string | null
+          fuel_total?: number
+          id?: string
+          loads_total?: number
+          measurement_id?: string | null
+          net_total?: number
+          period_end?: string
+          period_start?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carreteiro_closings_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "carreteiro_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_closings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_closings_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "contract_measurements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carreteiro_contracts: {
+        Row: {
+          active: boolean
+          carrier_name: string
+          contract_id: string | null
+          cost_center_id: string | null
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          financial_category: string
+          id: string
+          notes: string
+          number: string
+          pricing_mode: string
+          start_date: string
+          supplier_id: string | null
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          carrier_name: string
+          contract_id?: string | null
+          cost_center_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          financial_category?: string
+          id?: string
+          notes?: string
+          number: string
+          pricing_mode?: string
+          start_date?: string
+          supplier_id?: string | null
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          carrier_name?: string
+          contract_id?: string | null
+          cost_center_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          financial_category?: string
+          id?: string
+          notes?: string
+          number?: string
+          pricing_mode?: string
+          start_date?: string
+          supplier_id?: string | null
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carreteiro_contracts_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_contracts_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_contracts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_contracts_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carreteiro_fuel: {
+        Row: {
+          closing_id: string | null
+          contract_id: string | null
+          cost_center_id: string | null
+          created_at: string
+          created_by: string | null
+          fuel_date: string
+          id: string
+          liters: number
+          notes: string
+          plate_id: string
+          price_per_liter: number
+          total_value: number
+          updated_at: string
+        }
+        Insert: {
+          closing_id?: string | null
+          contract_id?: string | null
+          cost_center_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          fuel_date?: string
+          id?: string
+          liters?: number
+          notes?: string
+          plate_id: string
+          price_per_liter?: number
+          total_value?: number
+          updated_at?: string
+        }
+        Update: {
+          closing_id?: string | null
+          contract_id?: string | null
+          cost_center_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          fuel_date?: string
+          id?: string
+          liters?: number
+          notes?: string
+          plate_id?: string
+          price_per_liter?: number
+          total_value?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carreteiro_fuel_closing_fk"
+            columns: ["closing_id"]
+            isOneToOne: false
+            referencedRelation: "carreteiro_closings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_fuel_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "carreteiro_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_fuel_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_fuel_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_fuel_plate_id_fkey"
+            columns: ["plate_id"]
+            isOneToOne: false
+            referencedRelation: "carreteiro_plates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carreteiro_loads: {
+        Row: {
+          closing_id: string | null
+          contract_id: string
+          cost_center_id: string | null
+          created_at: string
+          created_by: string | null
+          destination: string
+          financial_category: string
+          id: string
+          km: number
+          load_date: string
+          notes: string
+          origin: string
+          plate_id: string
+          pricing_mode: string
+          tons: number
+          total_value: number
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          closing_id?: string | null
+          contract_id: string
+          cost_center_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          destination?: string
+          financial_category?: string
+          id?: string
+          km?: number
+          load_date?: string
+          notes?: string
+          origin?: string
+          plate_id: string
+          pricing_mode?: string
+          tons?: number
+          total_value?: number
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          closing_id?: string | null
+          contract_id?: string
+          cost_center_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          destination?: string
+          financial_category?: string
+          id?: string
+          km?: number
+          load_date?: string
+          notes?: string
+          origin?: string
+          plate_id?: string
+          pricing_mode?: string
+          tons?: number
+          total_value?: number
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carreteiro_loads_closing_fk"
+            columns: ["closing_id"]
+            isOneToOne: false
+            referencedRelation: "carreteiro_closings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_loads_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "carreteiro_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_loads_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_loads_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_loads_plate_id_fkey"
+            columns: ["plate_id"]
+            isOneToOne: false
+            referencedRelation: "carreteiro_plates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carreteiro_plate_links: {
+        Row: {
+          contract_id: string
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          id: string
+          plate_id: string
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          plate_id: string
+          start_date?: string
+          updated_at?: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          plate_id?: string
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carreteiro_plate_links_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "carreteiro_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_plate_links_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_plate_links_plate_id_fkey"
+            columns: ["plate_id"]
+            isOneToOne: false
+            referencedRelation: "carreteiro_plates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carreteiro_plates: {
+        Row: {
+          active: boolean
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          driver_name: string
+          id: string
+          notes: string
+          plate: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          driver_name?: string
+          id?: string
+          notes?: string
+          plate: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          driver_name?: string
+          id?: string
+          notes?: string
+          plate?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carreteiro_plates_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_plates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_addendum_items: {
         Row: {
           addendum_id: string
@@ -1218,8 +1663,16 @@ export type Database = {
         Args: { _approve: boolean; _comment?: string; _measurement_id: string }
         Returns: undefined
       }
+      fn_ensure_carreteiro_shadow_contract: {
+        Args: { _cc_id: string }
+        Returns: string
+      }
       fn_find_approval_tier: { Args: { _value: number }; Returns: string }
       fn_find_measurement_tier: { Args: { _value: number }; Returns: string }
+      fn_generate_carreteiro_closing: {
+        Args: { _cc_id: string; _end: string; _start: string }
+        Returns: string
+      }
       fn_mark_movement_paid: {
         Args: { _movement_id: string }
         Returns: undefined
