@@ -45,19 +45,6 @@ function ContractDetail() {
   const { data: contracts = [], isLoading } = useContractsQuery();
   const contract = contracts.find((c) => c.id === id);
 
-  const todayIso = new Date().toISOString().slice(0, 10);
-  const emptyMeasurement = {
-    date: todayIso,
-    description: "",
-    amount: "",
-    startDate: "",
-    endDate: "",
-    otherExpenses: "",
-    discount: "",
-    observation: "",
-  };
-  const [m, setM] = useState(emptyMeasurement);
-  const [editingMeasurementId, setEditingMeasurementId] = useState<string | null>(null);
   const [editContractOpen, setEditContractOpen] = useState(false);
 
   if (isLoading) {
@@ -75,60 +62,6 @@ function ContractDetail() {
 
   const bal = contractBalance(contract);
   const days = daysUntil(contract.endDate);
-
-  const startEditMeasurement = (mm: (typeof contract.measurements)[number]) => {
-    setEditingMeasurementId(mm.id);
-    setM({
-      date: mm.date,
-      description: mm.description,
-      amount: String(mm.amount),
-      startDate: mm.startDate ?? "",
-      endDate: mm.endDate ?? "",
-      otherExpenses: mm.otherExpenses ? String(mm.otherExpenses) : "",
-      discount: mm.discount ? String(mm.discount) : "",
-      observation: mm.observation ?? "",
-    });
-  };
-
-  const submitMeasurement = (e: React.FormEvent) => {
-    e.preventDefault();
-    const amount = Number(m.amount);
-    const otherExpenses = Number(m.otherExpenses) || 0;
-    const discount = Number(m.discount) || 0;
-    const total = amount + otherExpenses - discount;
-    if (!m.date || !amount || amount <= 0) {
-      toast.error("Informe data e valor da medição.");
-      return;
-    }
-    const editingCurrent = contract.measurements.find((x) => x.id === editingMeasurementId);
-    const available = bal.balance + (editingCurrent ? measurementTotal(editingCurrent) : 0);
-    if (total > available) {
-      toast.error("Valor total excede o saldo do contrato.");
-      return;
-    }
-    const payload = {
-      date: m.date,
-      description: m.description || "Medição",
-      amount,
-      startDate: m.startDate || undefined,
-      endDate: m.endDate || undefined,
-      otherExpenses: otherExpenses || undefined,
-      discount: discount || undefined,
-      observation: m.observation || undefined,
-    };
-    if (editingMeasurementId) {
-      void updateMeasurement(editingMeasurementId, payload)
-        .then(() => toast.success("Medição atualizada."))
-        .catch((err) => toast.error((err as Error).message));
-    } else {
-      void addMeasurement(contract.id, payload)
-        .then(() => toast.success("Medição lançada."))
-        .catch((err) => toast.error((err as Error).message));
-    }
-    setEditingMeasurementId(null);
-    setM(emptyMeasurement);
-  };
-
 
   return (
     <div className="space-y-6">
