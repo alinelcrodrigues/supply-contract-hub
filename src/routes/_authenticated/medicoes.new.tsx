@@ -2,6 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import LancamentoMedicao from "@/components/LancamentoMedicao";
 
 export const Route = createFileRoute("/_authenticated/medicoes/new")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    contractId: typeof search.contractId === "string" ? search.contractId : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Lançar medição | BALI CONSTRUTORA" },

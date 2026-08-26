@@ -185,144 +185,65 @@ function ContractDetail() {
 
       <AditivosContratuais contractId={contract.id} valorOriginal={contract.globalValue} aditivos={contract.addendums} />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
-        <Card>
-          <CardHeader><CardTitle className="text-base">{editingMeasurementId ? "Editar medição" : "Lançar medição / pagamento"}</CardTitle></CardHeader>
-          <CardContent>
-            <form onSubmit={submitMeasurement} className="grid gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Data</Label>
-                <Input type="date" value={m.date} onChange={(e) => setM({ ...m, date: e.target.value })} />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Período início</Label>
-                  <Input type="date" value={m.startDate} onChange={(e) => setM({ ...m, startDate: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Período fim</Label>
-                  <Input type="date" value={m.endDate} onChange={(e) => setM({ ...m, endDate: e.target.value })} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Descrição</Label>
-                <Input value={m.description} onChange={(e) => setM({ ...m, description: e.target.value })} placeholder="Medição mensal" />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="space-y-2">
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Valor (R$)</Label>
-                  <Input type="number" min="0" step="0.01" value={m.amount} onChange={(e) => setM({ ...m, amount: e.target.value })} placeholder="0,00" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Outras despesas (R$)</Label>
-                  <Input type="number" min="0" step="0.01" value={m.otherExpenses} onChange={(e) => setM({ ...m, otherExpenses: e.target.value })} placeholder="0,00" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Desconto (R$)</Label>
-                  <Input type="number" min="0" step="0.01" value={m.discount} onChange={(e) => setM({ ...m, discount: e.target.value })} placeholder="0,00" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Observação</Label>
-                <Textarea value={m.observation} onChange={(e) => setM({ ...m, observation: e.target.value })} placeholder="Informações complementares" />
-              </div>
-              <p className="text-xs text-muted-foreground">Saldo disponível: {formatBRL(bal.balance)}</p>
-              <div className="flex gap-2">
-                <Button type="submit" variant="secondary" className="flex-1 font-semibold">
-                  {editingMeasurementId ? "Salvar alterações" : "Lançar medição"}
-                </Button>
-                {editingMeasurementId && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => { setEditingMeasurementId(null); setM(emptyMeasurement); }}
-                  >
-                    <X className="mr-1 h-4 w-4" /> Cancelar
-                  </Button>
-                )}
-              </div>
-
-            </form>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-base">Histórico de medições</CardTitle>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <div className="flex items-center gap-3">
+            <CardTitle className="text-base">Medições do contrato</CardTitle>
             <Badge variant="outline">{contract.measurements.length}</Badge>
-          </CardHeader>
-          <CardContent>
-            {contract.measurements.length === 0 ? (
-              <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                Nenhuma medição lançada ainda.
-              </div>
-            ) : (
-              <div className="overflow-x-auto rounded-md border border-border">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/60 text-xs uppercase tracking-wider text-muted-foreground">
-                    <tr>
-                      <th className="px-3 py-2 text-left">Data</th>
-                      <th className="px-3 py-2 text-left">Período</th>
-                      <th className="px-3 py-2 text-left">Descrição</th>
-                      <th className="px-3 py-2 text-right">Valor</th>
-                      <th className="px-3 py-2 text-right">Despesas</th>
-                      <th className="px-3 py-2 text-right">Desconto</th>
-                      <th className="px-3 py-2 text-right">Total</th>
-                      <th className="px-3 py-2"></th>
+          </div>
+          <Button asChild size="sm" variant="secondary" className="font-semibold">
+            <Link to="/medicoes/new" search={{ contractId: contract.id }}>
+              <Plus className="mr-1 h-4 w-4" /> Lançar medição
+            </Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Medições seguem o fluxo de aprovação por alçada. Somente medições <strong>aprovadas</strong> abatem do saldo do contrato.
+          </p>
+          {contract.measurements.length === 0 ? (
+            <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+              Nenhuma medição lançada ainda.
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-md border border-border">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/60 text-xs uppercase tracking-wider text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Mês de referência</th>
+                    <th className="px-3 py-2 text-left">Observações</th>
+                    <th className="px-3 py-2 text-right">Valor</th>
+                    <th className="px-3 py-2 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {contract.measurements.map((mm) => (
+                    <tr key={mm.id} className="border-t border-border">
+                      <td className="px-3 py-2">{formatDate(mm.date)}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{mm.description || "—"}</td>
+                      <td className="px-3 py-2 text-right font-medium">{formatBRL(mm.amount)}</td>
+                      <td className="px-3 py-2 text-right">
+                        <Badge
+                          variant={mm.status === "aprovada" ? "default" : mm.status === "reprovada" ? "destructive" : "secondary"}
+                        >
+                          {STATUS_LABEL[mm.status] ?? mm.status}
+                        </Badge>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {[...contract.measurements].sort((a, b) => b.date.localeCompare(a.date)).map((mm) => (
-                      <tr key={mm.id} className="border-t border-border">
-                        <td className="px-3 py-2">{formatDate(mm.date)}</td>
-                        <td className="px-3 py-2 text-xs text-muted-foreground">
-                          {mm.startDate && mm.endDate ? `${formatDate(mm.startDate)} → ${formatDate(mm.endDate)}` : "—"}
-                        </td>
-                        <td className="px-3 py-2">
-                          <div>{mm.description}</div>
-                          {mm.observation && <div className="text-xs text-muted-foreground mt-0.5">{mm.observation}</div>}
-                        </td>
-                        <td className="px-3 py-2 text-right">{formatBRL(mm.amount)}</td>
-                        <td className="px-3 py-2 text-right">{mm.otherExpenses ? formatBRL(mm.otherExpenses) : "—"}</td>
-                        <td className="px-3 py-2 text-right">{mm.discount ? formatBRL(mm.discount) : "—"}</td>
-                        <td className="px-3 py-2 text-right font-medium">{formatBRL(measurementTotal(mm))}</td>
-                        <td className="px-3 py-2 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => startEditMeasurement(mm)}
-                              className="text-muted-foreground hover:text-primary"
-                              aria-label="Editar medição"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (confirm("Remover esta medição?")) void deleteMeasurement(contract.id, mm.id);
-                              }}
-                              className="text-muted-foreground hover:text-destructive"
-                              aria-label="Remover medição"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="border-t border-border bg-muted/30 font-semibold">
-                      <td colSpan={6} className="px-3 py-2 text-right">Total executado</td>
-                      <td className="px-3 py-2 text-right text-primary">{formatBRL(bal.paid)}</td>
-                      <td />
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t border-border bg-muted/30 font-semibold">
+                    <td colSpan={2} className="px-3 py-2 text-right">Total executado (aprovado)</td>
+                    <td className="px-3 py-2 text-right text-primary">{formatBRL(bal.paid)}</td>
+                    <td />
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {editContractOpen && (
         <EditarContratoDialog contract={contract} open onOpenChange={setEditContractOpen} />
