@@ -70,6 +70,8 @@ export type Contract = {
   adjustmentIndex: "IPCA" | "IGP-M" | "INCC" | "SINAPI" | "Nenhum";
   adjustmentMonth: number; // 1-12
   signed: boolean;
+  status: "ativo" | "cancelado";
+  cancellationReason: string | null;
   costCenterId: string | null;
   costCenter: CostCenter;
   financialCategory: FinancialCategory;
@@ -119,6 +121,8 @@ function mapContract(r: Row): Contract {
     adjustmentIndex: r.adjustment_index,
     adjustmentMonth: r.adjustment_month,
     signed: !!r.signed,
+    status: (r.status as "ativo" | "cancelado") ?? "ativo",
+    cancellationReason: r.cancellation_reason ?? null,
     costCenterId: r.cost_center_id ?? null,
     costCenter: r.cost_centers?.name ?? "Sem centro de custo",
     financialCategory: r.financial_category ?? "",
