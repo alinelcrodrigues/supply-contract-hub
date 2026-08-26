@@ -2,6 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import LancamentoMedicao from "@/components/LancamentoMedicao";
 
 export const Route = createFileRoute("/_authenticated/medicoes/new")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    contractId: typeof search.contractId === "string" ? search.contractId : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Lançar medição | BALI CONSTRUTORA" },
@@ -16,6 +19,7 @@ export const Route = createFileRoute("/_authenticated/medicoes/new")({
 });
 
 function Page() {
+  const { contractId } = Route.useSearch();
   return (
     <div className="space-y-6">
       <div>
@@ -24,7 +28,7 @@ function Page() {
           Após a aprovação de toda a alçada, um movimento financeiro é gerado aguardando documento de cobrança.
         </p>
       </div>
-      <LancamentoMedicao />
+      <LancamentoMedicao contractId={contractId} />
     </div>
   );
 }

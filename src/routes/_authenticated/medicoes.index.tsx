@@ -26,7 +26,7 @@ function Page() {
           <p className="text-sm text-muted-foreground">Alçada própria, separada da solicitação de contrato.</p>
         </div>
         <Button asChild>
-          <Link to="/medicoes/new"><FilePlus2 className="mr-2 h-4 w-4" /> Lançar medição</Link>
+          <Link to="/medicoes/new" search={{ contractId: undefined }}><FilePlus2 className="mr-2 h-4 w-4" /> Lançar medição</Link>
         </Button>
       </div>
       <PainelAprovacaoMedicao />
