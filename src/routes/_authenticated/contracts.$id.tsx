@@ -73,6 +73,21 @@ function ContractDetail() {
           <Button variant="outline" size="sm" onClick={() => setEditContractOpen(true)}>
             <Pencil className="mr-1 h-4 w-4" /> Editar contrato
           </Button>
+          <Button variant="ghost" size="sm" onClick={() => setShowHistory((v) => !v)}>
+            <History className="mr-1 h-4 w-4" /> Ver histórico
+          </Button>
+          {canManageContracts && contract.status !== "cancelado" && (
+            <CancelarDialog
+              title="Cancelar contrato"
+              buttonLabel="Cancelar contrato"
+              description="O contrato passa para a situação Cancelado. Contratos com medição aprovada ou pagamento realizado não podem ser cancelados."
+              pending={cancelContract.isPending}
+              onConfirm={async (reason) => {
+                await cancelContract.mutateAsync({ id: contract.id, reason });
+                toast.success("Contrato cancelado.");
+              }}
+            />
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -88,6 +103,25 @@ function ContractDetail() {
         </div>
 
       </div>
+
+      {contract.status === "cancelado" && (
+        <div className="rounded-md border border-muted bg-muted/40 p-4 text-sm">
+          <span className="font-semibold text-muted-foreground line-through">Contrato cancelado</span>
+          {contract.cancellationReason && (
+            <span className="ml-2 text-muted-foreground">Motivo: {contract.cancellationReason}</span>
+          )}
+        </div>
+      )}
+
+      {showHistory && (
+        <HistoricoAlteracoes
+          compact
+          recordId={contract.id}
+          tables={["contracts"]}
+          title="Histórico deste contrato"
+        />
+      )}
+
 
       {days <= 60 && (
         <div className={`rounded-md border p-4 ${days < 0 ? "border-destructive bg-destructive/10" : "border-secondary bg-secondary/10"}`}>
