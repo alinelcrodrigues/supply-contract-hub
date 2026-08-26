@@ -135,7 +135,7 @@ export function useRolePermissions() {
     queryFn: async () => {
       const { data, error } = await supabase.from("role_permissions").select("role, permission");
       if (error) throw error;
-      const map: Record<RoleId, Set<string>> = { admin: new Set(), gestor: new Set(), financeiro: new Set(), leitura: new Set() };
+      const map: Record<RoleId, Set<string>> = { admin: new Set(), gestor: new Set(), financeiro: new Set(), comprador: new Set(), leitura: new Set() };
       (data ?? []).forEach((r) => { map[r.role as RoleId]?.add(r.permission); });
       return map;
     },
