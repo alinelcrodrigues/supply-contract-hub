@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, X, Send, Pencil, Trash2 } from "lucide-react";
+import { Check, X, Send, Pencil, Trash2, History } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,12 +11,16 @@ import {
   useApprovalMeasurements, useMeasurementMutations, useTiers, useCurrentUserId, type Measurement,
 } from "@/lib/approvals-hooks";
 import EditarMedicaoDialog from "@/components/EditarMedicaoDialog";
+import CancelarDialog from "@/components/CancelarDialog";
+import HistoricoAlteracoes from "@/components/HistoricoAlteracoes";
+import { useCancelMutations } from "@/lib/audit-hooks";
 
 const statusLabel: Record<string, string> = {
   rascunho: "Rascunho",
   em_aprovacao: "Em aprovação",
   aprovada: "Aprovada",
   reprovada: "Reprovada",
+  cancelado: "Cancelado",
 };
 
 export default function PainelAprovacaoMedicao() {
@@ -26,6 +30,8 @@ export default function PainelAprovacaoMedicao() {
   const { data: costCenters } = useCostCenters();
   const { data: uid } = useCurrentUserId();
   const { data: role } = useCurrentUserRole();
+  const [historyFor, setHistoryFor] = useState<string | null>(null);
+  const cancelMut = useCancelMutations();
   const { decide, submit, remove } = useMeasurementMutations();
   const [comments, setComments] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<Measurement | null>(null);
@@ -64,7 +70,10 @@ export default function PainelAprovacaoMedicao() {
               {m.contracts?.supplier} · Referência {m.reference_month?.slice(0, 7)}
             </p>
           </div>
-          <Badge variant={m.status === "aprovada" ? "default" : m.status === "reprovada" ? "destructive" : "secondary"}>
+          <Badge
+            variant={m.status === "aprovada" ? "default" : m.status === "reprovada" ? "destructive" : "secondary"}
+            className={m.status === "cancelado" ? "bg-muted text-muted-foreground line-through" : undefined}
+          >
             {statusLabel[m.status] ?? m.status}
           </Badge>
         </CardHeader>
@@ -151,6 +160,27 @@ export default function PainelAprovacaoMedicao() {
                 </>
               )}
             </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            {["rascunho", "em_aprovacao", "reprovada"].includes(m.status) &&
+              (role === "admin" || role === "gestor" || m.created_by === uid) && (
+                <CancelarDialog
+                  title="Cancelar medição"
+                  description="O cancelamento é registrado no histórico com o motivo informado."
+                  pending={cancelMut.cancelMeasurement.isPending}
+                  onConfirm={async (reason) => {
+                    await cancelMut.cancelMeasurement.mutateAsync({ id: m.id, reason });
+                    toast.success("Medição cancelada.");
+                  }}
+                />
+              )}
+            <Button size="sm" variant="ghost" onClick={() => setHistoryFor(historyFor === m.id ? null : m.id)}>
+              <History className="mr-1 h-4 w-4" /> Ver histórico
+            </Button>
+          </div>
+          {historyFor === m.id && (
+            <HistoricoAlteracoes compact recordId={m.id} tables={['contract_measurements']} title="Histórico deste registro" />
           )}
         </CardContent>
       </Card>

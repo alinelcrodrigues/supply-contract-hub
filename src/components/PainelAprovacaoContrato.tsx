@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, X, Send, Paperclip, Pencil, Trash2 } from "lucide-react";
+import { Check, X, Send, Paperclip, Pencil, Trash2, History } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,12 +12,16 @@ import {
   type ContractRequest,
 } from "@/lib/approvals-hooks";
 import EditarSolicitacaoDialog from "@/components/EditarSolicitacaoDialog";
+import CancelarDialog from "@/components/CancelarDialog";
+import HistoricoAlteracoes from "@/components/HistoricoAlteracoes";
+import { useCancelMutations } from "@/lib/audit-hooks";
 
 const statusLabel: Record<string, string> = {
   rascunho: "Rascunho",
   em_aprovacao: "Em aprovação",
   aprovada: "Aprovada",
   reprovada: "Reprovada",
+  cancelado: "Cancelado",
 };
 
 export default function PainelAprovacaoContrato() {
@@ -27,6 +31,8 @@ export default function PainelAprovacaoContrato() {
   const { data: costCenters } = useCostCenters();
   const { data: uid } = useCurrentUserId();
   const { data: role } = useCurrentUserRole();
+  const [historyFor, setHistoryFor] = useState<string | null>(null);
+  const cancelMut = useCancelMutations();
   const { decide, submit, remove } = useContractRequestMutations();
   const [comments, setComments] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<ContractRequest | null>(null);
@@ -73,7 +79,10 @@ export default function PainelAprovacaoContrato() {
               {r.supplier_name} · {formatBRL(Number(r.total_value))} · {formatDate(r.created_at.slice(0, 10))}
             </p>
           </div>
-          <Badge variant={r.status === "aprovada" ? "default" : r.status === "reprovada" ? "destructive" : "secondary"}>
+          <Badge
+            variant={r.status === "aprovada" ? "default" : r.status === "reprovada" ? "destructive" : "secondary"}
+            className={r.status === "cancelado" ? "bg-muted text-muted-foreground line-through" : undefined}
+          >
             {statusLabel[r.status] ?? r.status}
           </Badge>
         </CardHeader>
@@ -177,6 +186,27 @@ export default function PainelAprovacaoContrato() {
                 </>
               )}
             </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            {["rascunho", "em_aprovacao", "reprovada"].includes(r.status) &&
+              (role === "admin" || role === "gestor" || r.requester_id === uid) && (
+                <CancelarDialog
+                  title="Cancelar solicitação"
+                  description="O cancelamento é registrado no histórico com o motivo informado."
+                  pending={cancelMut.cancelRequest.isPending}
+                  onConfirm={async (reason) => {
+                    await cancelMut.cancelRequest.mutateAsync({ id: r.id, reason });
+                    toast.success("Solicitação cancelada.");
+                  }}
+                />
+              )}
+            <Button size="sm" variant="ghost" onClick={() => setHistoryFor(historyFor === r.id ? null : r.id)}>
+              <History className="mr-1 h-4 w-4" /> Ver histórico
+            </Button>
+          </div>
+          {historyFor === r.id && (
+            <HistoricoAlteracoes compact recordId={r.id} tables={['contract_requests']} title="Histórico deste registro" />
           )}
         </CardContent>
       </Card>

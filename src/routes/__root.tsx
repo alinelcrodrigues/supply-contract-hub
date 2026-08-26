@@ -8,7 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { LayoutDashboard, FileText, LogOut, Settings, ClipboardList, Ruler, Wallet, SlidersHorizontal, Boxes } from "lucide-react";
+import { LayoutDashboard, FileText, LogOut, Settings, ClipboardList, Ruler, Wallet, SlidersHorizontal, Boxes, Truck, History } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -178,7 +178,10 @@ function AppHeader() {
               <NavLink to="/solicitacoes" icon={<ClipboardList className="h-4 w-4" />} label="Solicitações" />
               <NavLink to="/medicoes" icon={<Ruler className="h-4 w-4" />} label="Medições" />
               <NavLink to="/financeiro" icon={<Wallet className="h-4 w-4" />} label="Financeiro" />
+              <NavLink to="/carreteiros" icon={<Truck className="h-4 w-4" />} label="Carreteiros" />
               <NavLink to="/cadastros" icon={<Boxes className="h-4 w-4" />} label="Cadastros" />
+              <NavLink to="/historico" icon={<History className="h-4 w-4" />} label="Histórico" />
+
 
               {role === "admin" && (
                 <>

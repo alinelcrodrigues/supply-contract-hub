@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, History, Pencil, Plus, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,10 @@ import { Switch } from "@/components/ui/switch";
 import { AditivosContratuais } from "@/components/AditivosContratuais";
 import EditarContratoDialog from "@/components/EditarContratoDialog";
 import ContratoDocumentos from "@/components/ContratoDocumentos";
+import CancelarDialog from "@/components/CancelarDialog";
+import HistoricoAlteracoes from "@/components/HistoricoAlteracoes";
+import { useCancelMutations } from "@/lib/audit-hooks";
+import { useCurrentUserRole } from "@/lib/params-hooks";
 import {
   contractBalance,
   daysUntil,
@@ -26,6 +30,7 @@ const STATUS_LABEL: Record<MeasurementStatus, string> = {
   em_aprovacao: "Em aprovação",
   aprovada: "Aprovada",
   reprovada: "Reprovada",
+  cancelado: "Cancelado",
 };
 
 
@@ -46,6 +51,10 @@ function ContractDetail() {
   const contract = contracts.find((c) => c.id === id);
 
   const [editContractOpen, setEditContractOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const { data: role } = useCurrentUserRole();
+  const { cancelContract } = useCancelMutations();
+  const canManageContracts = role === "admin" || role === "gestor";
 
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">Carregando contrato...</p>;
@@ -73,6 +82,21 @@ function ContractDetail() {
           <Button variant="outline" size="sm" onClick={() => setEditContractOpen(true)}>
             <Pencil className="mr-1 h-4 w-4" /> Editar contrato
           </Button>
+          <Button variant="ghost" size="sm" onClick={() => setShowHistory((v) => !v)}>
+            <History className="mr-1 h-4 w-4" /> Ver histórico
+          </Button>
+          {canManageContracts && contract.status !== "cancelado" && (
+            <CancelarDialog
+              title="Cancelar contrato"
+              buttonLabel="Cancelar contrato"
+              description="O contrato passa para a situação Cancelado. Contratos com medição aprovada ou pagamento realizado não podem ser cancelados."
+              pending={cancelContract.isPending}
+              onConfirm={async (reason) => {
+                await cancelContract.mutateAsync({ id: contract.id, reason });
+                toast.success("Contrato cancelado.");
+              }}
+            />
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -88,6 +112,25 @@ function ContractDetail() {
         </div>
 
       </div>
+
+      {contract.status === "cancelado" && (
+        <div className="rounded-md border border-muted bg-muted/40 p-4 text-sm">
+          <span className="font-semibold text-muted-foreground line-through">Contrato cancelado</span>
+          {contract.cancellationReason && (
+            <span className="ml-2 text-muted-foreground">Motivo: {contract.cancellationReason}</span>
+          )}
+        </div>
+      )}
+
+      {showHistory && (
+        <HistoricoAlteracoes
+          compact
+          recordId={contract.id}
+          tables={["contracts"]}
+          title="Histórico deste contrato"
+        />
+      )}
+
 
       {days <= 60 && (
         <div className={`rounded-md border p-4 ${days < 0 ? "border-destructive bg-destructive/10" : "border-secondary bg-secondary/10"}`}>
@@ -108,6 +151,9 @@ function ContractDetail() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold tracking-tight">{contract.number}</h1>
+                {contract.status === "cancelado" && (
+                  <Badge className="bg-muted text-muted-foreground line-through">Cancelado</Badge>
+                )}
                 {contract.signed ? (
                   <Badge className="bg-primary text-primary-foreground">Assinado</Badge>
                 ) : (

@@ -135,7 +135,7 @@ function ContractsList() {
                             key={c.id}
                             to="/contracts/$id"
                             params={{ id: c.id }}
-                            className="block px-5 py-4 transition-colors hover:bg-muted/40"
+                            className={`block px-5 py-4 transition-colors hover:bg-muted/40 ${c.status === "cancelado" ? "opacity-60" : ""}`}
                           >
                             <div className="flex flex-wrap items-start justify-between gap-3">
                               <div className="min-w-0">
@@ -143,6 +143,9 @@ function ContractsList() {
                                   <span className="font-medium text-foreground">{c.number}</span>
                                   <span className="text-sm text-muted-foreground">·</span>
                                   <span className="text-sm font-medium text-foreground">{c.supplier}</span>
+                                  {c.status === "cancelado" && (
+                                    <Badge className="bg-muted text-muted-foreground line-through">Cancelado</Badge>
+                                  )}
                                   {c.signed ? (
                                     <Badge variant="outline" className="border-primary/40 text-primary">
                                       Assinado
