@@ -179,7 +179,7 @@ export function useContractsStable(): Contract[] {
    ========================================================= */
 
 export async function addContract(
-  c: Omit<Contract, "id" | "measurements" | "items" | "addendums" | "costCenter"> & { costCenter?: string },
+  c: Omit<Contract, "id" | "measurements" | "items" | "addendums" | "costCenter" | "status" | "cancellationReason"> & { costCenter?: string },
 ): Promise<Contract> {
   const { data, error } = await supabase
     .from("contracts")
