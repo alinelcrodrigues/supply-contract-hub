@@ -24,7 +24,7 @@ const statusLabel: Record<string, string> = {
   cancelado: "Cancelado",
 };
 
-export default function PainelAprovacaoContrato() {
+export default function PainelAprovacaoContrato({ idFilter }: { idFilter?: string[] | null }) {
   const { data: requests, isLoading } = useContractRequests();
   const { data: tiers } = useTiers("contract");
   const { data: users } = useUsers();
@@ -65,8 +65,11 @@ export default function PainelAprovacaoContrato() {
   if (isLoading) return <p className="text-sm text-muted-foreground">Carregando solicitações…</p>;
   if (!requests?.length) return <p className="text-sm text-muted-foreground">Nenhuma solicitação cadastrada.</p>;
 
-  const pending = requests.filter((r) => r.status === "em_aprovacao" && currentApprover(r) === uid);
-  const others = requests.filter((r) => !pending.includes(r));
+  const visible = idFilter ? requests.filter((r) => idFilter.includes(r.id)) : requests;
+  if (!visible.length) return <p className="text-sm text-muted-foreground">Nenhuma solicitação para os filtros selecionados.</p>;
+
+  const pending = visible.filter((r) => r.status === "em_aprovacao" && currentApprover(r) === uid);
+  const others = visible.filter((r) => !pending.includes(r));
 
   const renderCard = (r: ContractRequest, myTurn: boolean) => {
     const tier = tiers?.find((t) => t.id === r.tier_id);

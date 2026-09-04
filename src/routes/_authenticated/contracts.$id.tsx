@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { AditivosContratuais } from "@/components/AditivosContratuais";
 import EditarContratoDialog from "@/components/EditarContratoDialog";
 import ContratoDocumentos from "@/components/ContratoDocumentos";
+import DashboardIndicadoresContrato from "@/components/DashboardIndicadoresContrato";
 import CancelarDialog from "@/components/CancelarDialog";
 import HistoricoAlteracoes from "@/components/HistoricoAlteracoes";
 import { useCancelMutations } from "@/lib/audit-hooks";
@@ -226,6 +227,8 @@ function ContractDetail() {
           </div>
         </CardContent>
       </Card>
+
+      <DashboardIndicadoresContrato contractId={contract.id} />
 
       <ContratoDocumentos contractId={contract.id} />
 

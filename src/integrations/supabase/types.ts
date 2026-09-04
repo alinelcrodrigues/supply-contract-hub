@@ -229,6 +229,13 @@ export type Database = {
             referencedRelation: "contract_measurements"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "carreteiro_closings_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "v_contract_measurements_search"
+            referencedColumns: ["id"]
+          },
         ]
       }
       carreteiro_contracts: {
@@ -292,6 +299,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_contracts_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "v_contracts_search"
             referencedColumns: ["id"]
           },
           {
@@ -652,6 +666,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "contract_addendum_items_addendum_id_fkey"
+            columns: ["addendum_id"]
+            isOneToOne: false
+            referencedRelation: "v_contract_addendums_search"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "contract_addendum_items_cost_center_id_fkey"
             columns: ["cost_center_id"]
             isOneToOne: false
@@ -699,6 +720,13 @@ export type Database = {
             referencedRelation: "contracts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contract_addendums_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "v_contracts_search"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contract_documents: {
@@ -732,6 +760,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_documents_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "v_contracts_search"
             referencedColumns: ["id"]
           },
           {
@@ -780,6 +815,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_items_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "v_contracts_search"
             referencedColumns: ["id"]
           },
           {
@@ -834,6 +876,13 @@ export type Database = {
             referencedRelation: "contract_measurements"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contract_measurement_approvals_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "v_contract_measurements_search"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contract_measurement_cost_centers: {
@@ -871,6 +920,13 @@ export type Database = {
             columns: ["measurement_id"]
             isOneToOne: false
             referencedRelation: "contract_measurements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_measurement_cost_centers_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "v_contract_measurements_search"
             referencedColumns: ["id"]
           },
         ]
@@ -936,6 +992,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "contract_measurements_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "v_contracts_search"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "contract_measurements_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -994,6 +1057,13 @@ export type Database = {
             referencedRelation: "contract_requests"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contract_request_approvals_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "v_contract_requests_search"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contract_request_cost_centers: {
@@ -1033,6 +1103,13 @@ export type Database = {
             referencedRelation: "contract_requests"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contract_request_cost_centers_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "v_contract_requests_search"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contract_request_documents: {
@@ -1066,6 +1143,13 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "contract_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_request_documents_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "v_contract_requests_search"
             referencedColumns: ["id"]
           },
           {
@@ -1165,6 +1249,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_requests_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "v_contracts_search"
             referencedColumns: ["id"]
           },
           {
@@ -1370,10 +1461,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "financial_movements_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "v_contracts_search"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "financial_movements_measurement_id_fkey"
             columns: ["measurement_id"]
             isOneToOne: true
             referencedRelation: "contract_measurements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_movements_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: true
+            referencedRelation: "v_contract_measurements_search"
             referencedColumns: ["id"]
           },
           {
@@ -1503,6 +1608,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "measurements_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "v_contracts_search"
             referencedColumns: ["id"]
           },
         ]
@@ -1674,6 +1786,80 @@ export type Database = {
       }
     }
     Views: {
+      v_carreteiro_loads_search: {
+        Row: {
+          contract_id: string | null
+          cost_center_id: string | null
+          created_at: string | null
+          created_by: string | null
+          created_by_name: string | null
+          destination: string | null
+          id: string | null
+          load_date: string | null
+          origin: string | null
+          plate_id: string | null
+          total_value: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carreteiro_loads_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "carreteiro_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_loads_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_loads_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carreteiro_loads_plate_id_fkey"
+            columns: ["plate_id"]
+            isOneToOne: false
+            referencedRelation: "carreteiro_plates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_contract_addendums_search: {
+        Row: {
+          contract_id: string | null
+          created_at: string | null
+          created_by: string | null
+          created_by_name: string | null
+          date: string | null
+          description: string | null
+          id: string | null
+          tipo: string | null
+          value: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_addendums_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_addendums_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "v_contracts_search"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_contract_cost_center_allocation: {
         Row: {
           adjustment_value: number | null
@@ -1699,6 +1885,78 @@ export type Database = {
           financial_category: string | null
           origin_type: string | null
           value: number | null
+        }
+        Relationships: []
+      }
+      v_contract_measurements_search: {
+        Row: {
+          contract_id: string | null
+          created_at: string | null
+          created_by: string | null
+          created_by_name: string | null
+          id: string | null
+          reference_month: string | null
+          status: string | null
+          total_value: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_measurements_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_measurements_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "v_contracts_search"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_measurements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_contract_requests_search: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          created_by_name: string | null
+          id: string | null
+          object: string | null
+          status: string | null
+          supplier_name: string | null
+          total_value: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_requests_requester_id_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_contracts_search: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          created_by_name: string | null
+          end_date: string | null
+          global_value: number | null
+          id: string | null
+          number: string | null
+          object: string | null
+          start_date: string | null
+          status: string | null
+          supplier: string | null
         }
         Relationships: []
       }

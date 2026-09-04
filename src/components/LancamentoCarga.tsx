@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import FiltrosPesquisa, { emptyFilters, useSearchIds, type SearchFilters } from "@/components/FiltrosPesquisa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,11 +26,14 @@ import {
 const today = () => new Date().toISOString().slice(0, 10);
 
 export default function LancamentoCarga() {
+  const [filters, setFilters] = useState<SearchFilters>(emptyFilters);
+  const { ids: filteredIds } = useSearchIds("loads", filters);
   const { data: canManage } = useCanManageCarreteiros();
   const { data: contracts = [] } = useCarreteiroContracts();
   const { data: plates = [] } = usePlates();
   const { data: links = [] } = usePlateLinks();
-  const { data: loads = [], isLoading } = useLoads();
+  const { data: allLoads = [], isLoading } = useLoads();
+  const loads = filteredIds ? allLoads.filter((l) => filteredIds.includes(l.id)) : allLoads;
   const { add, remove } = useLoadMutations();
 
   const [form, setForm] = useState({
@@ -188,7 +192,8 @@ export default function LancamentoCarga() {
         <CardHeader>
           <CardTitle className="text-base">Cargas lançadas</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <FiltrosPesquisa value={filters} onChange={setFilters} />
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Carregando...</p>
           ) : loads.length === 0 ? (
