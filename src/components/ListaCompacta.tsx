@@ -138,7 +138,7 @@ export function TabelaCompacta<T extends { id: string }>({
                   {columns.map((c) => (
                     <TableCell
                       key={c.key}
-                      className={cn("py-2.5 text-sm", c.hideBelow && HIDE[c.hideBelow], c.className)}
+                      className={cn("py-2.5 table-text", c.hideBelow && HIDE[c.hideBelow], c.className)}
                     >
                       {c.cell(row)}
                     </TableCell>
