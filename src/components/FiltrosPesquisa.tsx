@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Filter, X } from "lucide-react";
+import { ChevronDown, Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveCostCenters, useUsers } from "@/lib/params-hooks";
+
 
 export type SearchArea = "contracts" | "requests" | "measurements" | "addendums" | "loads";
 
@@ -111,6 +113,10 @@ export function useSearchIds(area: SearchArea, filters: SearchFilters) {
   };
 }
 
+function activeCount(f: SearchFilters) {
+  return [f.createdMonth, f.competenceMonth, f.costCenterId, f.userId].filter(Boolean).length;
+}
+
 export default function FiltrosPesquisa({
   value,
   onChange,
@@ -120,67 +126,82 @@ export default function FiltrosPesquisa({
   onChange: (f: SearchFilters) => void;
   showCompetenceMonth?: boolean;
 }) {
+  const [open, setOpen] = useState(false);
   const { data: costCenters } = useActiveCostCenters();
   const { data: users } = useUsers();
   const set = (patch: Partial<SearchFilters>) => onChange({ ...value, ...patch });
+  const count = activeCount(value);
 
   return (
-    <div className="rounded-xl border border-border bg-card/60 p-4 backdrop-blur-sm">
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-          <Filter className="h-4 w-4 text-primary" /> Filtros de pesquisa
-        </div>
-        {hasActiveFilters(value) && (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" size="sm" onClick={() => setOpen((o) => !o)}>
+          <Filter className="mr-2 h-4 w-4 text-primary" />
+          Filtros
+          {count > 0 && (
+            <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">
+              {count}
+            </span>
+          )}
+          <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+        </Button>
+        {count > 0 && (
           <Button variant="ghost" size="sm" onClick={() => onChange(emptyFilters)}>
             <X className="mr-1 h-4 w-4" /> Limpar
           </Button>
         )}
       </div>
-      <div className={`grid gap-3 ${showCompetenceMonth ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
-        <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">Mês de criação</Label>
-          <Input type="month" value={value.createdMonth} onChange={(e) => set({ createdMonth: e.target.value })} />
-        </div>
-        {showCompetenceMonth && (
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Mês de competência</Label>
-            <Input
-              type="month"
-              value={value.competenceMonth}
-              onChange={(e) => set({ competenceMonth: e.target.value })}
-            />
+
+      {open && (
+        <div className="rounded-xl border border-border bg-card/60 p-4 backdrop-blur-sm">
+          <div className={`grid gap-3 ${showCompetenceMonth ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Mês de criação</Label>
+              <Input type="month" value={value.createdMonth} onChange={(e) => set({ createdMonth: e.target.value })} />
+            </div>
+            {showCompetenceMonth && (
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Mês de competência</Label>
+                <Input
+                  type="month"
+                  value={value.competenceMonth}
+                  onChange={(e) => set({ competenceMonth: e.target.value })}
+                />
+              </div>
+            )}
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Centro de custo</Label>
+              <Select
+                value={value.costCenterId || "all"}
+                onValueChange={(v) => set({ costCenterId: v === "all" ? "" : v })}
+              >
+                <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {(costCenters ?? []).map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.code ? `${c.code} — ${c.name}` : c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Criado por</Label>
+              <Select value={value.userId || "all"} onValueChange={(v) => set({ userId: v === "all" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {(users ?? []).map((u) => (
+                    <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        )}
-        <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">Centro de custo</Label>
-          <Select
-            value={value.costCenterId || "all"}
-            onValueChange={(v) => set({ costCenterId: v === "all" ? "" : v })}
-          >
-            <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {(costCenters ?? []).map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.code ? `${c.code} — ${c.name}` : c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
-        <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">Criado por</Label>
-          <Select value={value.userId || "all"} onValueChange={(v) => set({ userId: v === "all" ? "" : v })}>
-            <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {(users ?? []).map((u) => (
-                <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
+
