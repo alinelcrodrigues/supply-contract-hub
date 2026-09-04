@@ -105,8 +105,8 @@ function UsersTab({ isAdmin }: { isAdmin: boolean }) {
               <TableBody>
                 {users.map((u) => (
                   <TableRow key={u.id}>
-                    <TableCell className="font-medium">{u.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                    <TableCell>{u.name}</TableCell>
+                    <TableCell>{u.email}</TableCell>
                     <TableCell><Badge variant="outline">{roleLabel(u.role)}</Badge></TableCell>
                     <TableCell>
                       {u.active
@@ -304,7 +304,7 @@ function CostCentersTab({ isAdmin }: { isAdmin: boolean }) {
                   {cc.map((c: CostCenter) => (
                     <TableRow key={c.id}>
                       <TableCell className="font-mono text-xs">{c.code || "—"}</TableCell>
-                      <TableCell className="font-medium">{c.name}</TableCell>
+                      <TableCell>{c.name}</TableCell>
                       <TableCell>
                         <Switch
                           disabled={!isAdmin}
