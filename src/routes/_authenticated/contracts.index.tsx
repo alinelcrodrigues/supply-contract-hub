@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import FiltrosPesquisa, { emptyFilters, useSearchIds, type SearchFilters } from "@/components/FiltrosPesquisa";
 import { contractBalance, daysUntil, formatBRL, formatDate, useContractsStable } from "@/lib/contracts-store";
 
 export const Route = createFileRoute("/_authenticated/contracts/")({
@@ -23,17 +24,20 @@ function ContractsList() {
   const contracts = useContractsStable();
   const [query, setQuery] = useState("");
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [filters, setFilters] = useState<SearchFilters>(emptyFilters);
+  const { ids } = useSearchIds("contracts", filters);
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const byIds = ids ? contracts.filter((c) => ids.includes(c.id)) : contracts;
     const filtered = q
-      ? contracts.filter((c) =>
+      ? byIds.filter((c) =>
           [c.number, c.supplier, c.object, c.costCenter, c.financialCategory]
             .join(" ")
             .toLowerCase()
             .includes(q),
         )
-      : contracts;
+      : byIds;
     const map = new Map<string, typeof contracts>();
     for (const c of filtered) {
       const arr = map.get(c.costCenter) ?? [];
@@ -47,7 +51,7 @@ function ContractsList() {
         return { cc, items, global, paid, balance: global - paid };
       })
       .sort((a, b) => b.global - a.global);
-  }, [contracts, query]);
+  }, [contracts, query, ids]);
 
   return (
     <div className="space-y-8">
@@ -73,6 +77,8 @@ function ContractsList() {
           </Button>
         </div>
       </div>
+
+      <FiltrosPesquisa value={filters} onChange={setFilters} />
 
       {groups.length === 0 ? (
         <Card className="border-dashed">

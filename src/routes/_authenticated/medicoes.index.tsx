@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { FilePlus2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PainelAprovacaoMedicao from "@/components/PainelAprovacaoMedicao";
+import FiltrosPesquisa, { emptyFilters, useSearchIds, type SearchFilters } from "@/components/FiltrosPesquisa";
 
 export const Route = createFileRoute("/_authenticated/medicoes/")({
   head: () => ({
@@ -18,6 +20,8 @@ export const Route = createFileRoute("/_authenticated/medicoes/")({
 });
 
 function Page() {
+  const [filters, setFilters] = useState<SearchFilters>(emptyFilters);
+  const { ids } = useSearchIds("measurements", filters);
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -29,7 +33,8 @@ function Page() {
           <Link to="/medicoes/new" search={{ contractId: undefined }}><FilePlus2 className="mr-2 h-4 w-4" /> Lançar medição</Link>
         </Button>
       </div>
-      <PainelAprovacaoMedicao />
+      <FiltrosPesquisa value={filters} onChange={setFilters} showCompetenceMonth />
+      <PainelAprovacaoMedicao idFilter={ids} />
     </div>
   );
 }
