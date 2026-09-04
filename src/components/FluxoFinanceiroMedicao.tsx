@@ -51,14 +51,14 @@ export default function FluxoFinanceiroMedicao() {
   }
 
   const columns: ColunaCompacta<FinancialMovement>[] = [
-    { key: "code", header: "Código", cell: (mv) => <span className="font-medium text-foreground">#{mv.id.slice(0, 8)}</span> },
+    { key: "code", header: "Código", cell: (mv) => <span>#{mv.id.slice(0, 8)}</span> },
     {
       key: "contract",
       header: "Contrato / fornecedor",
       cell: (mv) => (
         <div className="min-w-0">
           <div className="truncate">{mv.contracts?.number ?? "—"}</div>
-          <div className="truncate text-xs text-muted-foreground">{mv.contracts?.supplier ?? ""}</div>
+          <div className="table-subtext truncate">{mv.contracts?.supplier ?? ""}</div>
         </div>
       ),
     },
@@ -67,7 +67,7 @@ export default function FluxoFinanceiroMedicao() {
       key: "due",
       header: "Vencimento",
       hideBelow: "md",
-      cell: (mv) => <span className="text-muted-foreground">{mv.due_date ? formatDate(mv.due_date) : "—"}</span>,
+      cell: (mv) => <span>{mv.due_date ? formatDate(mv.due_date) : "—"}</span>,
     },
     { key: "status", header: "Status", className: "text-right", cell: (mv) => <StatusBadge status={mv.status} /> },
   ];

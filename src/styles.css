@@ -155,3 +155,20 @@
     color: var(--color-foreground);
   }
 }
+
+/*
+ * Tipografia padrão de tabelas/listas (TabelaCompacta).
+ * - table-text: texto principal de qualquer coluna (14px, peso 400)
+ * - table-subtext: linha de apoio abaixo do principal (12px, muted)
+ */
+@utility table-text {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-foreground);
+}
+
+@utility table-subtext {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-muted-foreground);
+}

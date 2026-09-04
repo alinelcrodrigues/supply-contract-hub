@@ -106,7 +106,7 @@ export default function CadastroCategoriaFinanceira() {
               <TableBody>
                 {list.map((c) => (
                   <TableRow key={c.id}>
-                    <TableCell className="font-medium">{c.name}</TableCell>
+                    <TableCell>{c.name}</TableCell>
                     <TableCell>
                       <Badge variant={c.kind === "receita" ? "default" : "outline"}>{c.kind}</Badge>
                     </TableCell>

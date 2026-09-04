@@ -107,10 +107,10 @@ export default function CadastroFornecedores() {
               <TableBody>
                 {suppliers.map((s) => (
                   <TableRow key={s.id}>
-                    <TableCell className="font-medium">{s.trade_name}</TableCell>
-                    <TableCell className="text-muted-foreground">{s.legal_name || "—"}</TableCell>
+                    <TableCell>{s.trade_name}</TableCell>
+                    <TableCell>{s.legal_name || "—"}</TableCell>
                     <TableCell className="font-mono text-xs">{s.doc || "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell>
                       {[s.city, s.state].filter(Boolean).join(" / ") || "—"}
                     </TableCell>
                     <TableCell>

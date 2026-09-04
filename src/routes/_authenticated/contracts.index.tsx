@@ -47,8 +47,8 @@ function ContractsList() {
       header: "Contrato",
       cell: (c) => (
         <div className="min-w-0">
-          <div className="truncate font-medium text-foreground">{c.number}</div>
-          <div className="truncate text-xs text-muted-foreground">{c.object}</div>
+          <div className="truncate">{c.number}</div>
+          <div className="table-subtext truncate">{c.object}</div>
         </div>
       ),
     },
@@ -57,7 +57,7 @@ function ContractsList() {
       key: "cc",
       header: "Centro de custo",
       hideBelow: "lg",
-      cell: (c) => <span className="truncate text-muted-foreground">{c.costCenter || "—"}</span>,
+      cell: (c) => <span className="truncate">{c.costCenter || "—"}</span>,
     },
     {
       key: "global",
@@ -69,7 +69,7 @@ function ContractsList() {
     {
       key: "balance",
       header: "Saldo",
-      className: "text-right font-semibold tabular-nums text-primary",
+      className: "text-right tabular-nums",
       cell: (c) => formatBRL(contractBalance(c).balance),
     },
     {

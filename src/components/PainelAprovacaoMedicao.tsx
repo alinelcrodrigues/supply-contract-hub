@@ -174,7 +174,7 @@ export default function PainelAprovacaoMedicao({ idFilter }: { idFilter?: string
     {
       key: "ref",
       header: "Medição",
-      cell: (m) => <span className="font-medium text-foreground">#{m.id.slice(0, 8)}</span>,
+      cell: (m) => <span>#{m.id.slice(0, 8)}</span>,
     },
     {
       key: "contract",
@@ -182,7 +182,7 @@ export default function PainelAprovacaoMedicao({ idFilter }: { idFilter?: string
       cell: (m) => (
         <div className="min-w-0">
           <div className="truncate">{m.contracts?.number ?? "—"}</div>
-          <div className="truncate text-xs text-muted-foreground">{m.contracts?.supplier ?? ""}</div>
+          <div className="table-subtext truncate">{m.contracts?.supplier ?? ""}</div>
         </div>
       ),
     },
@@ -190,7 +190,7 @@ export default function PainelAprovacaoMedicao({ idFilter }: { idFilter?: string
       key: "competence",
       header: "Competência",
       hideBelow: "md",
-      cell: (m) => <span className="text-muted-foreground">{m.reference_month?.slice(0, 7) ?? "—"}</span>,
+      cell: (m) => <span>{m.reference_month?.slice(0, 7) ?? "—"}</span>,
     },
     { key: "value", header: "Valor", className: "text-right tabular-nums", cell: (m) => formatBRL(Number(m.total_value)) },
     { key: "status", header: "Status", className: "text-right", cell: (m) => <StatusBadge status={m.status} /> },

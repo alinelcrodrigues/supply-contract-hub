@@ -195,7 +195,7 @@ export default function CadastroContratoCarreteiro() {
                 <TableBody>
                   {contracts.map((c) => (
                     <TableRow key={c.id}>
-                      <TableCell className="font-medium">{c.number}</TableCell>
+                      <TableCell>{c.number}</TableCell>
                       <TableCell>{c.carrier_name}</TableCell>
                       <TableCell>
                         {formatBRL(Number(c.unit_price))}{" "}
