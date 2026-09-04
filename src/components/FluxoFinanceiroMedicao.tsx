@@ -67,7 +67,7 @@ export default function FluxoFinanceiroMedicao() {
       key: "due",
       header: "Vencimento",
       hideBelow: "md",
-      cell: (mv) => <span className="text-muted-foreground">{mv.due_date ? formatDate(mv.due_date) : "—"}</span>,
+      cell: (mv) => <span>{mv.due_date ? formatDate(mv.due_date) : "—"}</span>,
     },
     { key: "status", header: "Status", className: "text-right", cell: (mv) => <StatusBadge status={mv.status} /> },
   ];
