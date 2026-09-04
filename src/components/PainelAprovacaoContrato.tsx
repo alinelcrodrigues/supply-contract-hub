@@ -207,11 +207,11 @@ export default function PainelAprovacaoContrato({ idFilter }: { idFilter?: strin
     {
       key: "object",
       header: "Objeto",
-      cell: (r) => <span className="block max-w-[280px] truncate font-medium text-foreground">{r.object || "Sem objeto"}</span>,
+      cell: (r) => <span className="block max-w-[280px] truncate">{r.object || "Sem objeto"}</span>,
     },
     { key: "supplier", header: "Fornecedor", hideBelow: "md", cell: (r) => <span className="block max-w-[200px] truncate">{r.supplier_name}</span> },
     { key: "value", header: "Valor", className: "text-right tabular-nums", cell: (r) => formatBRL(Number(r.total_value)) },
-    { key: "step", header: "Etapa", hideBelow: "lg", cell: (r) => <span className="text-muted-foreground">{stepLabel(r)}</span> },
+    { key: "step", header: "Etapa", hideBelow: "lg", cell: (r) => <span>{stepLabel(r)}</span> },
     { key: "status", header: "Status", className: "text-right", cell: (r) => <StatusBadge status={r.status} /> },
   ];
 
