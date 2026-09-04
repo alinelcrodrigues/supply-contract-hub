@@ -23,7 +23,7 @@ const statusLabel: Record<string, string> = {
   cancelado: "Cancelado",
 };
 
-export default function PainelAprovacaoMedicao() {
+export default function PainelAprovacaoMedicao({ idFilter }: { idFilter?: string[] | null }) {
   const { data: measurements, isLoading } = useApprovalMeasurements();
   const { data: tiers } = useTiers("measurement");
   const { data: users } = useUsers();
@@ -54,8 +54,11 @@ export default function PainelAprovacaoMedicao() {
   if (isLoading) return <p className="text-sm text-muted-foreground">Carregando medições…</p>;
   if (!measurements?.length) return <p className="text-sm text-muted-foreground">Nenhuma medição lançada.</p>;
 
-  const pending = measurements.filter((m) => m.status === "em_aprovacao" && currentApprover(m) === uid);
-  const others = measurements.filter((m) => !pending.includes(m));
+  const visible = idFilter ? measurements.filter((m) => idFilter.includes(m.id)) : measurements;
+  if (!visible.length) return <p className="text-sm text-muted-foreground">Nenhuma medição para os filtros selecionados.</p>;
+
+  const pending = visible.filter((m) => m.status === "em_aprovacao" && currentApprover(m) === uid);
+  const others = visible.filter((m) => !pending.includes(m));
 
   const renderCard = (m: Measurement, myTurn: boolean) => {
     const tier = tiers?.find((t) => t.id === m.tier_id);
