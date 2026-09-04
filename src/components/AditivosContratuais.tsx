@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import FiltrosPesquisa, { emptyFilters, useSearchIds, type SearchFilters } from "@/components/FiltrosPesquisa";
 import {
   Select,
   SelectContent,
@@ -36,6 +37,9 @@ const TIPO_LABEL: Record<AddendumType, string> = {
 };
 
 export function AditivosContratuais({ contractId, valorOriginal, aditivos }: Props) {
+  const [filters, setFilters] = useState<SearchFilters>(emptyFilters);
+  const { ids: filteredIds } = useSearchIds("addendums", filters);
+  const visibleAditivos = filteredIds ? aditivos.filter((a) => filteredIds.includes(a.id)) : aditivos;
   const todayIso = new Date().toISOString().slice(0, 10);
   const { data: costCenters = [] } = useActiveCostCenters();
   const [saving, setSaving] = useState(false);
@@ -176,13 +180,17 @@ export function AditivosContratuais({ contractId, valorOriginal, aditivos }: Pro
           </div>
         </form>
 
-        {aditivos.length === 0 ? (
+        <div className="mb-4">
+          <FiltrosPesquisa value={filters} onChange={setFilters} />
+        </div>
+
+        {visibleAditivos.length === 0 ? (
           <div className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
             Nenhum aditivo registrado.
           </div>
         ) : (
           <div className="space-y-2">
-            {aditivos.map((a) => {
+            {visibleAditivos.map((a) => {
               const total = a.tipo === "ajuste_valor" ? a.value : a.items.reduce((s, i) => s + i.value, 0);
               return (
                 <div key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-3">
