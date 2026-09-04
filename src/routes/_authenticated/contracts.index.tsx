@@ -45,12 +45,7 @@ function ContractsList() {
     {
       key: "object",
       header: "Contrato",
-      cell: (c) => (
-        <div className="min-w-0">
-          <div className="truncate">{c.number}</div>
-          <div className="table-subtext truncate">{c.object}</div>
-        </div>
-      ),
+      cell: (c) => <span className="truncate">{c.number}</span>,
     },
     { key: "supplier", header: "Fornecedor", hideBelow: "md", cell: (c) => <span className="truncate">{c.supplier}</span> },
     {
