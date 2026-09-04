@@ -185,7 +185,7 @@ export default function AbastecimentoEFechamentoCarreteiro() {
                       <TableCell className="font-mono">{f.carreteiro_plates?.plate ?? "—"}</TableCell>
                       <TableCell className="text-right">{Number(f.liters)}</TableCell>
                       <TableCell className="text-right">{formatBRL(Number(f.price_per_liter))}</TableCell>
-                      <TableCell className="text-right font-medium">{formatBRL(Number(f.total_value))}</TableCell>
+                      <TableCell className="text-right">{formatBRL(Number(f.total_value))}</TableCell>
                       <TableCell className="text-right">
                         <Badge variant={f.closing_id ? "default" : "secondary"}>{f.closing_id ? "Fechado" : "Em aberto"}</Badge>
                       </TableCell>
@@ -268,7 +268,7 @@ export default function AbastecimentoEFechamentoCarreteiro() {
                       </TableCell>
                       <TableCell className="text-right">{formatBRL(Number(c.loads_total))}</TableCell>
                       <TableCell className="text-right">-{formatBRL(Number(c.fuel_total))}</TableCell>
-                      <TableCell className="text-right font-semibold text-primary">{formatBRL(Number(c.net_total))}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatBRL(Number(c.net_total))}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
